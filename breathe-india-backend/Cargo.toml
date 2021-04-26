@@ -1,0 +1,13 @@
+[package]
+name = "breathe-india-backend"
+version = "0.1.0"
+authors = ["Farseen <zah4n5dz@anonaddy.me>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15.0"
+rocket = { git = "https://github.com/SergioBenitez/Rocket", rev="801e04bd5369eb39e126c75f6d11e1e9597304d8" }
+sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+
