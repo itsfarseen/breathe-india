@@ -124,7 +124,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "breath-india-backend"
+name = "breathe-india-backend"
 version = "0.1.0"
 dependencies = [
  "dotenv",

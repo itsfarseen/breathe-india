@@ -1,12 +1,27 @@
-use sqlx::postgres::PgPoolOptions;
-use std::io::Result;
+#[macro_use]
+extern crate rocket;
 
-async fn main() -> Result<()> {
+use dotenv::dotenv;
+use sqlx::postgres::PgPoolOptions;
+
+#[rocket::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv()?;
+    let db_url = std::env::var("DATABASE_URL")?;
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect(env!("DATABASE_URL"))
+        .connect(&db_url)
         .await?;
 
-    println!("Hello, world!");
+    rocket::build()
+        .mount("/hello", routes![world])
+        .manage(pool)
+        .launch()
+        .await?;
     Ok(())
+}
+
+#[get("/")]
+async fn world() -> String {
+    "Hello World".into()
 }
