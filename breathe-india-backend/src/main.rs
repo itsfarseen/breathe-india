@@ -13,44 +13,46 @@ use slog::o;
 use slog::Drain;
 use slog::Logger;
 use sqlx::postgres::PgPoolOptions;
-use std::sync::RwLockReadGuard;
-use std::sync::{Mutex, RwLock};
+use std::sync::Mutex;
 use std::time::Instant;
 use std::{error::Error, sync::Arc};
+use tokio::sync::RwLock;
 
 mod google_jwt;
 mod myres;
 mod slog_nested;
+use google_jwt::JwtVerifier;
 use myres::{myerr, myok, MyRes};
 
-struct GoogleJwkKeys(Arc<RwLock<JwkKeys>>);
+struct GoogleJwkKeys(RwLock<Arc<JwkKeys>>);
 
 const GOOGLE_JWK_URL: &'static str = "https://www.googleapis.com/oauth2/v3/certs";
 
 impl GoogleJwkKeys {
     pub async fn load_new() -> Result<Self, Box<dyn Error>> {
         let keys = google_jwt::JwkKeys::fetch(GOOGLE_JWK_URL, Instant::now()).await?;
-        Ok(Self(Arc::new(RwLock::new(keys))))
+        Ok(Self(RwLock::new(Arc::new(keys))))
     }
 
-    pub async fn get_latest_keys<'a>(
-        &'a self,
-    ) -> Result<RwLockReadGuard<'_, JwkKeys>, Box<dyn Error + 'a>> {
-        let read_lock = self.0.read()?;
+    pub async fn get_latest_keys<'a>(&'a self) -> Result<Arc<JwkKeys>, Box<dyn Error + 'a>> {
+        let read_lock = self.0.read().await;
         if read_lock.is_still_valid(Instant::now()) {
-            return Ok(read_lock);
+            return Ok((*read_lock).clone());
         }
         drop(read_lock);
-        let mut write_lock = self.0.write()?;
+        let mut write_lock = self.0.write().await;
         let keys = google_jwt::JwkKeys::fetch(GOOGLE_JWK_URL, Instant::now()).await?;
-        *write_lock = keys;
+        *write_lock = Arc::new(keys);
         drop(write_lock);
-        let read_lock = self.0.read()?;
-        return Ok(read_lock);
+        let read_lock = self.0.read().await;
+        return Ok((*read_lock).clone());
     }
 }
 
 static LOGGER: OnceCell<Logger> = OnceCell::new();
+
+static GOOGLE_JWK_KEYS: OnceCell<GoogleJwkKeys> = OnceCell::new();
+static JWT_VERIFIER: OnceCell<JwtVerifier> = OnceCell::new();
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -72,6 +74,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let error_log = Logger::root(error_log, o!());
     let _ = LOGGER.set(error_log);
 
+    let google_jwk_keys = GoogleJwkKeys::load_new().await?;
+    let _ = GOOGLE_JWK_KEYS.set(google_jwk_keys);
+
+    let jwt_verifier = JwtVerifier {
+        audience: std::env::var("GOOGLE_JWT_AUDIENCE")?,
+        issuer: std::env::var("GOOGLE_JWT_ISSUER")?,
+    };
+    let _ = JWT_VERIFIER.set(jwt_verifier);
+
     rocket::build()
         .mount("/hello", routes![world])
         .manage(pool)
@@ -86,7 +97,11 @@ struct Login {
 }
 
 #[post("/login", data = "<data>")]
-async fn login(data: Json<Login>, google_keys: State<'_, GoogleJwkKeys>) -> MyRes<String> {
+async fn login(data: Json<Login>) -> MyRes<String, String> {
+    let keys = GOOGLE_JWK_KEYS.get().unwrap();
+    let keys = bail!(keys.get_latest_keys().await);
+    let jwt_verifier = JWT_VERIFIER.get().unwrap();
+    jwt_verifier.verify_jwt(&data.token, &keys.keys);
     todo!()
 }
 

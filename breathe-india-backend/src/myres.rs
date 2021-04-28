@@ -3,13 +3,20 @@ use rocket::request::Request;
 use rocket::response::Responder;
 use std::error::Error;
 
-pub struct MyRes<T>(pub Result<T, Box<dyn Error>>);
+pub enum MyRes<T, E> {
+    Ok(T),
+    Err(E),
+    Fail(Box<dyn Error>),
+}
 
-impl<'r, T: Responder<'r, 'static>> Responder<'r, 'static> for MyRes<T> {
+impl<'r, T: Responder<'r, 'static>, E: Responder<'r, 'static>> Responder<'r, 'static>
+    for MyRes<T, E>
+{
     fn respond_to(self, req: &'r Request<'_>) -> rocket::response::Result<'static> {
-        match self.0 {
-            Ok(r) => r.respond_to(req),
-            Err(e) => {
+        match self {
+            MyRes::Ok(r) => r.respond_to(req),
+            MyRes::Err(r) => r.respond_to(req),
+            MyRes::Fail(e) => {
                 let logger = crate::LOGGER.get().unwrap();
                 // todo!();
                 let route_name = req
@@ -29,10 +36,14 @@ impl<'r, T: Responder<'r, 'static>> Responder<'r, 'static> for MyRes<T> {
     }
 }
 
-pub fn myok<T>(t: T) -> MyRes<T> {
-    MyRes(Ok(t))
-}
-
-pub fn myerr<T>(err: Box<dyn Error>) -> MyRes<T> {
-    MyRes(Err(err))
+#[macro_export]
+macro_rules! bail {
+    ($e:expr) => {
+        match $e {
+            Ok(ok) => ok,
+            Err(err) => {
+                return MyRes::Fail(err);
+            }
+        }
+    };
 }

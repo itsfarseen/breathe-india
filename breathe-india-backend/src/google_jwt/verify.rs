@@ -24,26 +24,32 @@ pub enum VerificationError {
     UnknownKeyAlgorithm,
 }
 
-pub fn verify_jwt(
-    token: &str,
-    keys: &HashMap<String, JwkKey>,
-    audience: &str,
-    issuer: &str,
-) -> Result<TokenData<Claims>, VerificationError> {
-    let token_kid = decode_header(token)
-        .map(|header| header.kid)
-        .map_err(|_| VerificationError::InvalidToken("Failed to decode header".to_owned()))?
-        .ok_or_else(|| VerificationError::InvalidToken("header.kid not present".to_owned()))?;
+pub struct JwtVerifier {
+    pub audience: String,
+    pub issuer: String,
+}
 
-    let key = keys.get(&token_kid).ok_or(VerificationError::KeyNotFound)?;
+impl JwtVerifier {
+    pub fn verify_jwt(
+        &self,
+        token: &str,
+        keys: &HashMap<String, JwkKey>,
+    ) -> Result<TokenData<Claims>, VerificationError> {
+        let token_kid = decode_header(token)
+            .map(|header| header.kid)
+            .map_err(|_| VerificationError::InvalidToken("Failed to decode header".to_owned()))?
+            .ok_or_else(|| VerificationError::InvalidToken("header.kid not present".to_owned()))?;
 
-    let algorithm =
-        Algorithm::from_str(&key.alg).map_err(|_| VerificationError::UnknownKeyAlgorithm)?;
+        let key = keys.get(&token_kid).ok_or(VerificationError::KeyNotFound)?;
 
-    let mut validation = Validation::new(algorithm);
-    validation.set_audience(&[audience]);
-    validation.iss = Some(issuer.to_owned());
-    let key = DecodingKey::from_rsa_components(&key.n, &key.e);
+        let algorithm =
+            Algorithm::from_str(&key.alg).map_err(|_| VerificationError::UnknownKeyAlgorithm)?;
 
-    decode::<Claims>(token, &key, &validation).map_err(VerificationError::InvalidSignature)
+        let mut validation = Validation::new(algorithm);
+        validation.set_audience(&[self.audience]);
+        validation.iss = Some(self.issuer.clone());
+        let key = DecodingKey::from_rsa_components(&key.n, &key.e);
+
+        decode::<Claims>(token, &key, &validation).map_err(VerificationError::InvalidSignature)
+    }
 }

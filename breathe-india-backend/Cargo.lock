@@ -161,6 +161,7 @@ dependencies = [
  "slog-json",
  "sloggers",
  "sqlx",
+ "tokio",
  "uuid",
 ]
 

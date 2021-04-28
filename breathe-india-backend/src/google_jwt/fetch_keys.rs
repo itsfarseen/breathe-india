@@ -1,5 +1,6 @@
 use reqwest::header::HeaderValue;
 use reqwest::Response;
+use std::collections::HashMap;
 use std::error::Error;
 use std::time::{Duration, Instant};
 
@@ -18,7 +19,7 @@ pub struct JwkKey {
 }
 
 pub struct JwkKeys {
-    pub keys: Vec<JwkKey>,
+    pub keys: HashMap<String, JwkKey>,
     pub created: Instant,
     pub validity: Duration,
 }
@@ -31,13 +32,18 @@ impl JwkKeys {
     pub async fn fetch(jwk_url: &str, now: Instant) -> Result<JwkKeys, Box<dyn Error>> {
         let http_response = reqwest::get(jwk_url).await?;
         let max_age = get_max_age(&http_response).unwrap_or(FALLBACK_TIMEOUT);
-        let result = Result::Ok(http_response.json::<KeyResponse>().await?);
+        let result = http_response.json::<KeyResponse>().await?;
 
-        return result.map(|res| JwkKeys {
-            keys: res.keys,
+        let mut keys_hm = HashMap::new();
+        for key in result.keys.into_iter() {
+            keys_hm.insert(key.kid.clone(), key);
+        }
+
+        Ok(JwkKeys {
+            keys: keys_hm,
             created: now,
             validity: max_age,
-        });
+        })
     }
 }
 
