@@ -15,6 +15,10 @@ pub struct Claims {
     pub sub: String,
     // Issued at -- as epoch seconds
     pub iat: i64,
+    // Google fields
+    pub email: String,
+    pub name: String,
+    pub picture: String,
 }
 
 pub enum VerificationError {
@@ -46,7 +50,7 @@ impl JwtVerifier {
             Algorithm::from_str(&key.alg).map_err(|_| VerificationError::UnknownKeyAlgorithm)?;
 
         let mut validation = Validation::new(algorithm);
-        validation.set_audience(&[self.audience]);
+        validation.set_audience(&[&self.audience]);
         validation.iss = Some(self.issuer.clone());
         let key = DecodingKey::from_rsa_components(&key.n, &key.e);
 

@@ -7,6 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.40"
 chrono = { version = "0.4.19", features = ["serde"] }
 dotenv = "0.15.0"
 erased-serde = "0.3.13"
@@ -21,6 +22,7 @@ slog-async = "2.6.0"
 slog-json = "2.3.0"
 sloggers = "1.0.1"
 sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres", "chrono", "uuid", "macros"] }
+thiserror = "1.0.24"
 tokio = "1.5.0"
 uuid = { version = "0.8.2", features = ["serde"] }
 

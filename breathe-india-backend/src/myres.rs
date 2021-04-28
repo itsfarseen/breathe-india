@@ -1,7 +1,14 @@
 use crate::slog_nested::WrapSerde;
+use rocket::http::Status;
 use rocket::request::Request;
 use rocket::response::Responder;
+use rocket_contrib::json::Json;
+use serde::Serialize;
 use std::error::Error;
+
+pub trait HasStatusCode {
+    fn get_status(&self) -> Status;
+}
 
 pub enum MyRes<T, E> {
     Ok(T),
@@ -9,13 +16,11 @@ pub enum MyRes<T, E> {
     Fail(Box<dyn Error>),
 }
 
-impl<'r, T: Responder<'r, 'static>, E: Responder<'r, 'static>> Responder<'r, 'static>
-    for MyRes<T, E>
-{
+impl<'r, T: Serialize, E: Serialize + HasStatusCode> Responder<'r, 'static> for MyRes<T, E> {
     fn respond_to(self, req: &'r Request<'_>) -> rocket::response::Result<'static> {
         match self {
-            MyRes::Ok(r) => r.respond_to(req),
-            MyRes::Err(r) => r.respond_to(req),
+            MyRes::Ok(r) => Json(r).respond_to(req),
+            MyRes::Err(r) => (r.get_status(), Json(r)).respond_to(req),
             MyRes::Fail(e) => {
                 let logger = crate::LOGGER.get().unwrap();
                 // todo!();
@@ -37,12 +42,24 @@ impl<'r, T: Responder<'r, 'static>, E: Responder<'r, 'static>> Responder<'r, 'st
 }
 
 #[macro_export]
-macro_rules! bail {
+macro_rules! fail {
     ($e:expr) => {
         match $e {
             Ok(ok) => ok,
             Err(err) => {
-                return MyRes::Fail(err);
+                return MyRes::Fail(err.into());
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! bail {
+    ($e:expr, $f: expr) => {
+        match $e {
+            Ok(ok) => ok,
+            Err(err) => {
+                return MyRes::Err($f(err));
             }
         }
     };
