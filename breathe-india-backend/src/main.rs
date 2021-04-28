@@ -7,8 +7,6 @@ extern crate serde;
 use dotenv::dotenv;
 use google_jwt::JwkKeys;
 use once_cell::sync::OnceCell;
-use rocket::response::Responder;
-use rocket::Request;
 use rocket::State;
 use rocket_contrib::json::Json;
 use slog::o;
@@ -21,8 +19,9 @@ use std::time::Instant;
 use std::{error::Error, sync::Arc};
 
 mod google_jwt;
+mod myres;
 mod slog_nested;
-use slog_nested::WrapSerde;
+use myres::{myerr, myok, MyRes};
 
 struct GoogleJwkKeys(Arc<RwLock<JwkKeys>>);
 
@@ -89,32 +88,6 @@ struct Login {
 #[post("/login", data = "<data>")]
 async fn login(data: Json<Login>, google_keys: State<'_, GoogleJwkKeys>) -> MyRes<String> {
     todo!()
-}
-
-struct MyRes<T>(Result<T, Box<dyn Error>>);
-
-impl<'r, T: Responder<'r, 'static>> Responder<'r, 'static> for MyRes<T> {
-    fn respond_to(self, req: &'r Request<'_>) -> rocket::response::Result<'static> {
-        match self.0 {
-            Ok(r) => r.respond_to(req),
-            Err(e) => {
-                let logger = LOGGER.get().unwrap();
-                // todo!();
-                let route_name = req
-                    .route()
-                    .and_then(|r| r.name.as_ref().map(|r| r.to_string()))
-                    .unwrap_or_default()
-                    .to_string();
-                let uri = req.uri().to_string();
-                let method = req.method().to_string();
-
-                let error_chain: Vec<_> = e.chain().map(|e| e.to_string()).collect();
-
-                slog::error!(logger, "E500"; "method" => method, "route_name" => route_name, "uri" => uri, "error_chain" => WrapSerde(error_chain));
-                Err(rocket::http::Status::InternalServerError)
-            }
-        }
-    }
 }
 
 #[get("/")]
