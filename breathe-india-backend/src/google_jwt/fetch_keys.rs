@@ -1,7 +1,7 @@
+use anyhow::{Context, Result};
 use reqwest::header::HeaderValue;
 use reqwest::Response;
 use std::collections::HashMap;
-use std::error::Error;
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Deserialize)]
@@ -29,10 +29,15 @@ impl JwkKeys {
         self.created + self.validity > now
     }
 
-    pub async fn fetch(jwk_url: &str, now: Instant) -> Result<JwkKeys, Box<dyn Error>> {
-        let http_response = reqwest::get(jwk_url).await?;
+    pub async fn fetch(jwk_url: &str, now: Instant) -> Result<JwkKeys> {
+        let http_response = reqwest::get(jwk_url)
+            .await
+            .with_context(|| format!("Downloading {}", jwk_url))?;
         let max_age = get_max_age(&http_response).unwrap_or(FALLBACK_TIMEOUT);
-        let result = http_response.json::<KeyResponse>().await?;
+        let result = http_response
+            .json::<KeyResponse>()
+            .await
+            .context("Loading json body")?;
 
         let mut keys_hm = HashMap::new();
         for key in result.keys.into_iter() {
