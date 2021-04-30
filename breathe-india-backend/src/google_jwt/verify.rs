@@ -24,13 +24,13 @@ pub struct Claims {
 pub enum VerificationError {
     InvalidToken(String),
     KeyNotFound,
-    InvalidSignature(jsonwebtoken::errors::Error),
+    FailedToDecode(Vec<jsonwebtoken::errors::Error>),
     UnknownKeyAlgorithm,
 }
 
 pub struct JwtVerifier {
     pub audience: String,
-    pub issuer: String,
+    pub issuers: Vec<String>,
 }
 
 impl JwtVerifier {
@@ -49,11 +49,18 @@ impl JwtVerifier {
         let algorithm =
             Algorithm::from_str(&key.alg).map_err(|_| VerificationError::UnknownKeyAlgorithm)?;
 
-        let mut validation = Validation::new(algorithm);
-        validation.set_audience(&[&self.audience]);
-        validation.iss = Some(self.issuer.clone());
-        let key = DecodingKey::from_rsa_components(&key.n, &key.e);
+        let mut errors = Vec::new();
+        for issuer in &self.issuers {
+            let mut validation = Validation::new(algorithm);
+            validation.set_audience(&[&self.audience]);
+            validation.iss = Some(issuer.clone());
+            let key = DecodingKey::from_rsa_components(&key.n, &key.e);
 
-        decode::<Claims>(token, &key, &validation).map_err(VerificationError::InvalidSignature)
+            match decode::<Claims>(token, &key, &validation) {
+                Ok(token) => return Ok(token),
+                Err(e) => errors.push(e),
+            }
+        }
+        Err(VerificationError::FailedToDecode(errors))
     }
 }

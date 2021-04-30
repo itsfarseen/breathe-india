@@ -94,15 +94,31 @@ async fn main() -> Result<()> {
         .context("Load Google's JWK for the first time")?;
     let _ = GOOGLE_JWK_KEYS.set(google_jwk_keys);
 
-    let jwt_verifier = JwtVerifier {
-        audience: std::env::var("GOOGLE_JWT_AUDIENCE")
-            .context("Get GOOGLE_JWT_AUDIENCE env var")?,
-        issuer: std::env::var("GOOGLE_JWT_ISSUER").context("Get GOOGLE_JWT_ISSUER env var")?,
-    };
+    let audience =
+        std::env::var("GOOGLE_JWT_AUDIENCE").context("Get GOOGLE_JWT_AUDIENCE env var")?;
+    let issuers_str =
+        std::env::var("GOOGLE_JWT_ISSUERS").context("Get GOOGLE_JWT_ISSUER env var")?;
+    let issuers = issuers_str
+        .split(' ')
+        .map(|s| s.to_owned())
+        .collect::<Vec<String>>();
+    let jwt_verifier = JwtVerifier { audience, issuers };
     let _ = JWT_VERIFIER.set(jwt_verifier);
 
     rocket::build()
-        .mount("/hello", routes![login])
+        .mount(
+            "/",
+            routes![
+                login,
+                profile,
+                profile_update,
+                posts,
+                my_posts,
+                posts_create,
+                posts_update,
+                posts_delete
+            ],
+        )
         .manage(pool)
         .launch()
         .await
@@ -616,4 +632,27 @@ async fn posts_update(
         items,
     };
     MyRes::Ok(post_full)
+}
+
+#[delete("/posts/<id>")]
+async fn posts_delete(
+    id: rocket_contrib::uuid::Uuid,
+    user: LoggedInUser,
+    db: State<'_, PgPool>,
+) -> MyRes<(), PostUpdateError> {
+    let id: Uuid = id.into_inner();
+    let res = sqlx::query!(
+        r#"DELETE FROM posts
+        WHERE id = $1 AND userid = $2"#,
+        id,
+        user.0,
+    )
+    .execute(&*db)
+    .await;
+
+    let res = fail!(res);
+    if res.rows_affected() == 0 {
+        return MyRes::Err(PostUpdateError::NotFound);
+    }
+    MyRes::Ok(())
 }
