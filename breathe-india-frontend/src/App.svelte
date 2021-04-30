@@ -6,8 +6,10 @@
   import Post from "./components/Post.svelte";
   import Posts from "./components/Posts.svelte";
 
+  let linkClass =
+    "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
+
   let activeTabClass = "border-gray-200";
-  let inactiveTabClass = "border-transparent hover:border-white";
 </script>
 
 <Router>
@@ -17,28 +19,13 @@
         <h1 class="text-xl font-bold">Breathe India</h1>
       </div>
       <div class="flex">
-        <NavLink
-          klass="flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold"
-          activeKlass={activeTabClass}
-          inactiveKlass={inactiveTabClass}
-          to="/needs"
-        >
+        <NavLink klass={linkClass} activeKlass={activeTabClass} to="/needs">
           Needs
         </NavLink>
-        <NavLink
-          klass="flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold"
-          activeKlass={activeTabClass}
-          inactiveKlass={inactiveTabClass}
-          to="/supplies"
-        >
+        <NavLink klass={linkClass} activeKlass={activeTabClass} to="/supplies">
           Supplies
         </NavLink>
-        <NavLink
-          klass="flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold"
-          activeKlass={activeTabClass}
-          inactiveKlass={inactiveTabClass}
-          to="/me"
-        >
+        <NavLink klass={linkClass} activeKlass={activeTabClass} to="/me">
           Me
         </NavLink>
       </div>
@@ -53,6 +40,9 @@
       <Route path="/post/:id" let:params>
         <Post post_id={params.id} />
       </Route>
+      <Route path="/me">
+        <Me />
+      </Route>
       <Route>
         <E404 />
       </Route>
@@ -61,10 +51,6 @@
 </Router>
 
 <style>
-  header {
-    /* background: #00596c; */
-  }
-
   :global(html, body, #app) {
     height: 100vh;
   }
@@ -73,6 +59,7 @@
     display: flex;
     flex-direction: column;
   }
+
   :global(#app > *) {
     flex: 1;
   }
