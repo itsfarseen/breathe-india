@@ -18,9 +18,9 @@ use slog::o;
 use slog::Drain;
 use slog::Logger;
 use sqlx::{postgres::PgPoolOptions, PgPool};
-use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Instant;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -249,4 +249,371 @@ async fn profile_update(
     let user = fail!(res);
     let user = fail!(user.ok_or_else(|| anyhow!("Logged in user not found in db")));
     MyRes::Ok(user)
+}
+
+#[derive(Serialize, Deserialize, sqlx::Type, FromFormField)]
+#[sqlx(rename_all = "lowercase")]
+pub enum PostType {
+    Needs,
+    Supplies,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Post {
+    id: Uuid,
+    userid: Uuid,
+    post_type: PostType,
+    state: String,
+    district: String,
+    city: String,
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    message: String,
+}
+
+#[derive(Serialize)]
+pub struct ProfilePublic {
+    id: Uuid,
+    name: String,
+    profile_pic_url: String,
+    bio: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PostFull {
+    id: Uuid,
+    userid: Uuid,
+    post_type: PostType,
+    state: String,
+    district: String,
+    city: String,
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    message: String,
+    items: Vec<PostItem>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PostItem {
+    id: Uuid,
+    post_id: Uuid,
+    item: String,
+    quantity: String,
+}
+
+#[derive(Serialize)]
+pub struct GetPosts {
+    posts: Vec<PostFull>,
+    users: Vec<ProfilePublic>,
+}
+
+async fn get_posts_full(posts: Vec<Post>, db: &PgPool) -> Result<Vec<PostFull>> {
+    let post_ids: Vec<Uuid> = posts.iter().map(|p| p.id).collect();
+
+    let res = sqlx::query_as!(
+        PostItem,
+        r#"
+        SELECT * FROM post_items
+        WHERE post_id = ANY($1)
+        "#,
+        &post_ids
+    )
+    .fetch_all(db)
+    .await;
+    let post_items = res?;
+
+    let mut posts_full: HashMap<Uuid, PostFull> = HashMap::new();
+    for post in posts {
+        posts_full.insert(
+            post.id,
+            PostFull {
+                id: post.id,
+                userid: post.userid,
+                post_type: post.post_type,
+                state: post.state,
+                district: post.district,
+                city: post.city,
+                created_at: post.created_at,
+                updated_at: post.updated_at,
+                message: post.message,
+                items: Vec::new(),
+            },
+        );
+    }
+
+    if !posts_full.is_empty() {
+        for post_item in post_items {
+            posts_full
+                .get_mut(&post_item.post_id)
+                .map(|p| p.items.push(post_item));
+        }
+    }
+
+    let posts_full = posts_full.into_iter().map(|(_k, v)| v).collect();
+
+    Ok(posts_full)
+}
+
+#[get("/posts?<start>&<n>&<typ>")]
+async fn posts(
+    start: Option<i64>,
+    n: Option<i64>,
+    typ: PostType,
+    db: State<'_, PgPool>,
+) -> MyRes<GetPosts, ()> {
+    let res = sqlx::query_as!(
+        Post,
+        r#"
+        SELECT posts.id,
+               userid,
+               post_type as "post_type: _",
+               state,
+               district,
+               city,
+               created_at,
+               updated_at,
+               message
+        FROM posts 
+        WHERE post_type = $3
+        OFFSET $1
+        LIMIT $2
+        "#,
+        start,
+        n,
+        typ: _
+    )
+    .fetch_all(&*db)
+    .await;
+    let posts = fail!(res);
+
+    let userids: Vec<Uuid> = posts.iter().map(|p| p.userid).collect();
+    let res = sqlx::query_as!(
+        ProfilePublic,
+        r#"
+        SELECT id, name, bio, profile_pic_url FROM users
+        WHERE id = ANY($1)
+        "#,
+        &userids
+    )
+    .fetch_all(&*db)
+    .await;
+    let users = fail!(res);
+
+    let posts_full = fail!(get_posts_full(posts, &*db).await);
+
+    MyRes::Ok(GetPosts {
+        users,
+        posts: posts_full,
+    })
+}
+
+#[get("/my_posts")]
+async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<PostFull>, ()> {
+    let res = sqlx::query_as!(
+        Post,
+        r#"
+        SELECT posts.id,
+               userid,
+               post_type as "post_type: _",
+               state,
+               district,
+               city,
+               created_at,
+               updated_at,
+               message
+        FROM posts 
+        WHERE userid = $1
+        "#,
+        user.0
+    )
+    .fetch_all(&*db)
+    .await;
+    let posts = fail!(res);
+
+    let posts_full = fail!(get_posts_full(posts, &*db).await);
+
+    MyRes::Ok(posts_full)
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PostNew {
+    post_type: PostType,
+    state: String,
+    district: String,
+    city: String,
+    message: String,
+    items: Vec<PostItemNew>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PostItemNew {
+    item: String,
+    quantity: String,
+}
+
+#[post("/posts", data = "<data>")]
+async fn posts_create(
+    user: LoggedInUser,
+    db: State<'_, PgPool>,
+    data: Json<PostNew>,
+) -> MyRes<PostFull, ()> {
+    let res = sqlx::query_as!(
+        Post,
+        r#"INSERT INTO posts(
+            userid, 
+            post_type,
+            state, 
+            district,
+            city,
+            message
+        ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING 
+               id,
+               userid,
+               post_type as "post_type: _",
+               state,
+               district,
+               city,
+               created_at,
+               updated_at,
+               message
+        "#,
+        user.0,
+        data.post_type: _,
+        data.state,
+        data.district,
+        data.city,
+        data.message
+    )
+    .fetch_one(&*db)
+    .await;
+
+    let post = fail!(res);
+    let mut items = Vec::new();
+    for item in &data.items {
+        let res = sqlx::query_as!(
+            PostItem,
+            r#"INSERT INTO post_items(
+            post_id, 
+            item,
+            quantity
+        ) VALUES ($1, $2, $3) RETURNING *"#,
+            post.id,
+            item.item,
+            item.quantity
+        )
+        .fetch_one(&*db)
+        .await;
+        let item = fail!(res);
+        items.push(item);
+    }
+
+    let post_full = PostFull {
+        id: post.id,
+        userid: post.userid,
+        post_type: post.post_type,
+        state: post.state,
+        district: post.district,
+        city: post.city,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        message: post.message,
+        items,
+    };
+    MyRes::Ok(post_full)
+}
+
+#[derive(Serialize)]
+enum PostUpdateError {
+    NotFound,
+}
+
+impl HasStatusCode for PostUpdateError {
+    fn get_status(&self) -> Status {
+        match self {
+            PostUpdateError::NotFound => Status::NotFound,
+        }
+    }
+}
+
+#[patch("/posts/<id>", data = "<data>")]
+async fn posts_update(
+    id: rocket_contrib::uuid::Uuid,
+    user: LoggedInUser,
+    db: State<'_, PgPool>,
+    data: Json<PostNew>,
+) -> MyRes<PostFull, PostUpdateError> {
+    let id: Uuid = id.into_inner();
+    let res = sqlx::query_as!(
+        Post,
+        r#"UPDATE posts SET 
+            post_type = $3,
+            state = $4,
+            district = $5,
+            city = $6,
+            message = $7,
+            updated_at = $8
+         WHERE id = $1 AND userid = $2
+         RETURNING 
+               id,
+               userid,
+               post_type as "post_type: _",
+               state,
+               district,
+               city,
+               created_at,
+               updated_at,
+               message
+        "#,
+        id,
+        user.0,
+        data.post_type: _,
+        data.state,
+        data.district,
+        data.city,
+        data.message,
+        chrono::Utc::now()
+    )
+    .fetch_optional(&*db)
+    .await;
+
+    let post = fail!(res);
+    let post = bail!(post.ok_or(()), |_| PostUpdateError::NotFound);
+
+    let res = sqlx::query!(r#"DELETE FROM post_items WHERE post_id = $1"#, id,)
+        .execute(&*db)
+        .await;
+    let _ = fail!(res);
+
+    let mut items = Vec::new();
+    for item in &data.items {
+        let res = sqlx::query_as!(
+            PostItem,
+            r#"INSERT INTO post_items(
+                post_id, 
+                item,
+                quantity
+            ) VALUES ($1, $2, $3) RETURNING *"#,
+            post.id,
+            item.item,
+            item.quantity
+        )
+        .fetch_one(&*db)
+        .await;
+        let item = fail!(res);
+        items.push(item);
+    }
+
+    let post_full = PostFull {
+        id: post.id,
+        userid: post.userid,
+        post_type: post.post_type,
+        state: post.state,
+        district: post.district,
+        city: post.city,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        message: post.message,
+        items,
+    };
+    MyRes::Ok(post_full)
 }
