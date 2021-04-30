@@ -226,3 +226,27 @@ async fn profile(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<User, ()> {
     let user = fail!(user.ok_or_else(|| anyhow!("Logged in user not found in db")));
     MyRes::Ok(user)
 }
+
+#[derive(Deserialize)]
+pub struct UpdateProfile {
+    pub bio: String,
+}
+
+#[post("/profile", data = "<data>")]
+async fn profile_update(
+    data: Json<UpdateProfile>,
+    user: LoggedInUser,
+    db: State<'_, PgPool>,
+) -> MyRes<User, ()> {
+    let res = sqlx::query_as!(
+        User,
+        "UPDATE users SET bio=$2 WHERE id = $1 RETURNING *",
+        &user.0,
+        &data.bio
+    )
+    .fetch_optional(&*db)
+    .await;
+    let user = fail!(res);
+    let user = fail!(user.ok_or_else(|| anyhow!("Logged in user not found in db")));
+    MyRes::Ok(user)
+}
