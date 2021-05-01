@@ -10,6 +10,7 @@
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.7",
     "autoprefixer": "^10.2.5",
     "cssnano": "^5.0.1",
+    "ky": "^0.27.0",
     "postcss": "^8.2.10",
     "postcss-load-config": "^3.0.1",
     "svelte": "^3.37.0",
@@ -17,5 +18,8 @@
     "svelte-routing": "^1.6.0",
     "tailwindcss": "^2.1.1",
     "vite": "^2.2.3"
+  },
+  "dependencies": {
+    "ajv": "^8.2.0"
   }
 }

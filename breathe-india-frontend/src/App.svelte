@@ -10,6 +10,13 @@
     "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
 
   let activeTabClass = "border-gray-200";
+
+  let jwt = localStorage.getItem("breathe_india_jwt");
+
+  function onLogin(e) {
+    jwt = e.detail.token;
+    localStorage.setItem("breathe_india_jwt", jwt);
+  }
 </script>
 
 <Router>
@@ -41,7 +48,7 @@
         <Post post_id={params.id} />
       </Route>
       <Route path="/me">
-        <Me />
+        <Me on:login={onLogin} token={jwt} />
       </Route>
       <Route>
         <E404 />
