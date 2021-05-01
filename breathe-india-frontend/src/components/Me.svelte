@@ -13,16 +13,10 @@
       dispatch,
       api.login({ token: id_token })
     );
-    console.log(our_token);
     dispatch("login", { token: our_token });
   };
 
-  if (token != null) {
-    // profile = api
-    //   .profile({ token })
-    //   .then(
-    //     (val) => new Promise((resolve) => setTimeout(() => resolve(val), 2000))
-    //   );
+  $: if (token != null) {
     profile = fwdError(dispatch, api.profile({ token }));
   }
 
@@ -37,7 +31,7 @@
 
     profile = fwdError(
       dispatch,
-      api.profile_update({ bio: editBioValue, token })
+      api.profileUpdate({ bio: editBioValue, token })
     );
 
     editBioState = false;
