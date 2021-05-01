@@ -1,8 +1,9 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import TimeAgo from "javascript-time-ago";
-
   import api from "../api";
   import { navigate } from "svelte-routing";
+  import { fwdError } from "../utils";
 
   export let type = "";
   export let start = 0;
@@ -10,10 +11,15 @@
   export let item = "";
   export let location = "";
 
+  const dispatch = createEventDispatcher();
+
   let posts;
 
   function load() {
-    posts = api.getPosts({ typ: type, start, n, item, location });
+    posts = fwdError(
+      dispatch,
+      api.getPosts({ typ: type, start, n, item, location })
+    );
   }
 
   load();

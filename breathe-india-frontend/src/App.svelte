@@ -108,13 +108,13 @@
     </header>
     <main class="flex-1 flex flex-col overflow-y-scroll">
       <Route path="/needs">
-        <Posts type="Needs" />
+        <Posts type="Needs" on:error={onError} />
       </Route>
       <Route path="/supplies">
-        <Posts type="Supplies" />
+        <Posts type="Supplies" on:error={onError} />
       </Route>
       <Route path="/post/:id" let:params>
-        <Post post_id={params.id} />
+        <Post post_id={params.id} on:error={onError} />
       </Route>
       <Route path="/post/:id/update" let:params>
         <PostEdit post_id={params.id} token={jwt} on:error={onError} />
