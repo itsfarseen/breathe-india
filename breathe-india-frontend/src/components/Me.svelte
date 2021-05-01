@@ -38,6 +38,16 @@
   }
 </script>
 
+<svelte:head>
+  {#if token == null}
+    <script src="https://apis.google.com/js/platform.js"></script>
+    <meta
+      name="google-signin-client_id"
+      content="138821141331-1rhsperdtvqvog7o93su1hkeh47crv41.apps.googleusercontent.com"
+    />
+  {/if}
+</svelte:head>
+
 <div class="bg-gray-200 flex flex-col flex-1">
   {#if token == null}
     <h1 class="text-4xl font-bold text-gray-500 mt-16 mb-8 text-center">
