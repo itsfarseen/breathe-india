@@ -2,3 +2,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.field {
+  @apply border border-gray-300 bg-gray-100 rounded bg-clip-border;
+  @apply flex items-center;
+}
+
+.field > span {
+  @apply px-2 p-1 w-20 text-gray-600;
+  @apply border-r border-gray-300;
+}
+
+.field > input {
+  @apply px-2 p-1 flex-1;
+}
+
+.button {
+    @apply bg-green-500 text-white p-1 px-4 rounded-sm shadow-md;
+    @apply active:shadow-none;
+}
+
+.button-neutral {
+    @apply bg-gray-200 text-gray-600 p-1 px-4 rounded-sm shadow;
+    @apply active:shadow-none;
+}
+

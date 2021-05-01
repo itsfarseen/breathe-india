@@ -161,9 +161,11 @@ const parseCreatePostResponse = ajv.compileParser({
   }
 });
 const validatePostItems = ajv.compile({
-  properties: {
-    item: { type: "string" },
-    quantity: { type: "string" },
+  elements: {
+    properties: {
+      item: { type: "string" },
+      quantity: { type: "string" },
+    }
   }
 })
 async function createPost({ post_type, state, district, city, spot, message, items, token }) {

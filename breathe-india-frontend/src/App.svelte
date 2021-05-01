@@ -5,6 +5,7 @@
   import Me from "./components/Me.svelte";
   import Post from "./components/Post.svelte";
   import Posts from "./components/Posts.svelte";
+  import PostEdit from "./components/PostEdit.svelte";
 
   let linkClass =
     "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
@@ -32,7 +33,7 @@
     ) {
       onNetworkError();
     } else {
-      onUnexpectedError();
+      onUnexpectedError(e.detail);
     }
   }
 
@@ -44,7 +45,7 @@
       case "warn":
         toastClass = "bg-yellow-500";
         break;
-      case "err":
+      case "error":
         toastClass = "bg-red-500";
         break;
       case "info":
@@ -69,11 +70,12 @@
     );
   }
 
-  function onUnexpectedError() {
+  function onUnexpectedError(err) {
     toast(
       "error",
       "We encountered an unexpected error. Please reload the app."
     );
+    console.log(err);
   }
 </script>
 
@@ -87,7 +89,7 @@
 {/if}
 
 <Router>
-  <div class="flex flex-col">
+  <div class="flex flex-col h-screen">
     <header class="bg-green-800 text-white flex flex-col shadow-md z-10">
       <div class="p-4 pb-2 flex">
         <h1 class="text-xl font-bold">Breathe India</h1>
@@ -104,7 +106,7 @@
         </NavLink>
       </div>
     </header>
-    <main class="flex-1 flex flex-col">
+    <main class="flex-1 flex flex-col overflow-y-scroll">
       <Route path="/needs">
         <Posts type="Needs" />
       </Route>
@@ -113,6 +115,12 @@
       </Route>
       <Route path="/post/:id" let:params>
         <Post post_id={params.id} />
+      </Route>
+      <Route path="/post/:id/update" let:params>
+        <PostEdit post_id={params.id} token={jwt} on:error={onError} />
+      </Route>
+      <Route path="/post/new/:typ" let:params>
+        <PostEdit typ={params.typ} token={jwt} on:error={onError} />
       </Route>
       <Route path="/me">
         <Me on:login={onLogin} token={jwt} on:error={onError} />
