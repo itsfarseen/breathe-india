@@ -25,4 +25,49 @@ async function login({ token }) {
   }).json()
 }
 
-export default { login };
+const parseProfileResponse = ajv.compileParser({
+  properties: {
+    id: { type: "string" },
+    name: { type: "string" },
+    email: { type: "string" },
+    profile_pic_url: { type: "string" },
+    bio: { type: "string" },
+  },
+});
+
+async function profile({ token }) {
+  return await ky.get(BASE_URL + "/profile", {
+    headers: {
+      "Authorization": "Bearer " + token
+    },
+    parseJson: (text) => {
+      const parse = parseProfileResponse;
+      let data = parse(text);
+      if (data === undefined) {
+        throw { message: parse.message, position: parse.position };
+      }
+      return data;
+    }
+  }).json()
+}
+
+async function profile_update({ bio, token }) {
+  return await ky.post(BASE_URL + "/profile", {
+    headers: {
+      "Authorization": "Bearer " + token,
+    },
+    json: {
+      bio
+    },
+    parseJson: (text) => {
+      const parse = parseProfileResponse;
+      let data = parse(text);
+      if (data === undefined) {
+        throw { message: parse.message, position: parse.position };
+      }
+      return data;
+    }
+  }).json()
+}
+
+export default { login, profile, profile_update };
