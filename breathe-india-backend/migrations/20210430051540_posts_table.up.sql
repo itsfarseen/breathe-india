@@ -8,6 +8,7 @@ CREATE TABLE posts (
     state TEXT NOT NULL,
     district TEXT NOT NULL,
     city TEXT NOT NULL,
+    spot TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     message TEXT NOT NULL

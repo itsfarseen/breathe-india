@@ -316,6 +316,7 @@ pub struct Post {
     state: String,
     district: String,
     city: String,
+    spot: String,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     message: String,
@@ -337,6 +338,7 @@ pub struct PostFull {
     state: String,
     district: String,
     city: String,
+    spot: String,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     message: String,
@@ -383,6 +385,7 @@ async fn get_posts_full(posts: Vec<Post>, db: &PgPool) -> Result<Vec<PostFull>> 
                 state: post.state,
                 district: post.district,
                 city: post.city,
+                spot: post.spot,
                 created_at: post.created_at,
                 updated_at: post.updated_at,
                 message: post.message,
@@ -420,6 +423,7 @@ async fn posts(
                state,
                district,
                city,
+               spot,
                created_at,
                updated_at,
                message
@@ -469,6 +473,7 @@ async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<PostFu
                state,
                district,
                city,
+               spot,
                created_at,
                updated_at,
                message
@@ -492,6 +497,7 @@ pub struct PostNew {
     state: String,
     district: String,
     city: String,
+    spot: String,
     message: String,
     items: Vec<PostItemNew>,
 }
@@ -516,14 +522,16 @@ async fn posts_create(
             state, 
             district,
             city,
+            spot,
             message
-        ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING 
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING 
                id,
                userid,
                post_type as "post_type: _",
                state,
                district,
                city,
+               spot,
                created_at,
                updated_at,
                message
@@ -533,6 +541,7 @@ async fn posts_create(
         data.state,
         data.district,
         data.city,
+        data.spot,
         data.message
     )
     .fetch_one(&*db)
@@ -565,6 +574,7 @@ async fn posts_create(
         state: post.state,
         district: post.district,
         city: post.city,
+        spot: post.spot,
         created_at: post.created_at,
         updated_at: post.updated_at,
         message: post.message,
@@ -601,8 +611,9 @@ async fn posts_update(
             state = $4,
             district = $5,
             city = $6,
-            message = $7,
-            updated_at = $8
+            spot = $7,
+            message = $8,
+            updated_at = $9
          WHERE id = $1 AND userid = $2
          RETURNING 
                id,
@@ -611,6 +622,7 @@ async fn posts_update(
                state,
                district,
                city,
+               spot,
                created_at,
                updated_at,
                message
@@ -621,6 +633,7 @@ async fn posts_update(
         data.state,
         data.district,
         data.city,
+        data.spot,
         data.message,
         chrono::Utc::now()
     )
@@ -661,6 +674,7 @@ async fn posts_update(
         state: post.state,
         district: post.district,
         city: post.city,
+        spot: post.spot,
         created_at: post.created_at,
         updated_at: post.updated_at,
         message: post.message,

@@ -95,6 +95,7 @@ const postSchema = {
     state: { type: "string" },
     district: { type: "string" },
     city: { type: "string" },
+    spot: { type: "string" },
     created_at: { type: "timestamp" },
     updated_at: { type: "timestamp" },
     message: { type: "string" },
@@ -165,7 +166,7 @@ const validatePostItems = ajv.compile({
     quantity: { type: "string" },
   }
 })
-async function createPost({ post_type, state, district, city, message, items, token }) {
+async function createPost({ post_type, state, district, city, spot, message, items, token }) {
   if (!validatePostItems(items)) {
     throw { errors: validatePostItems.errors };
   }
@@ -179,6 +180,7 @@ async function createPost({ post_type, state, district, city, message, items, to
       state,
       district,
       city,
+      spot,
       message,
       items
     },
@@ -193,7 +195,7 @@ async function createPost({ post_type, state, district, city, message, items, to
   }).json()
 }
 
-async function updatePost({ id, post_type, state, district, city, message, items, token }) {
+async function updatePost({ id, post_type, state, district, city, spot, message, items, token }) {
   if (!validatePostItems(items)) {
     throw { errors: validatePostItems.errors };
   }
@@ -207,6 +209,7 @@ async function updatePost({ id, post_type, state, district, city, message, items
       state,
       district,
       city,
+      spot,
       message,
       items
     },
