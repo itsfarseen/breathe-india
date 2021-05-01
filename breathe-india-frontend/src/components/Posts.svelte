@@ -9,8 +9,6 @@
 
   let posts = api.getPosts({ typ: type });
 
-  // @ts-ignore
-
   const timeAgo = new TimeAgo("en-US");
 </script>
 
