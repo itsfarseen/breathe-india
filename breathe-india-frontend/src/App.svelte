@@ -66,7 +66,7 @@
   function onNetworkError() {
     toast(
       "warn",
-      "We are detecting connecivity issues. Please try reloading if problem persists."
+      "We are detecting connecivity issues. Please check your internet and refresh the app."
     );
   }
 
