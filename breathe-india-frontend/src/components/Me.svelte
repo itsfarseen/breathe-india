@@ -1,5 +1,6 @@
 <script>
   import api from "../api";
+  import { fwdError } from "../utils";
   import { createEventDispatcher } from "svelte";
   export let token = null;
   let profile = null;
@@ -8,7 +9,10 @@
 
   window.onGoogleSignin = async (googleUser) => {
     let id_token = googleUser.getAuthResponse().id_token;
-    let { our_token } = await api.login({ token: id_token });
+    let { our_token } = await fwdError(
+      dispatch,
+      api.login({ token: id_token })
+    );
     console.log(our_token);
     dispatch("login", { token: our_token });
   };
@@ -19,7 +23,7 @@
     //   .then(
     //     (val) => new Promise((resolve) => setTimeout(() => resolve(val), 2000))
     //   );
-    profile = api.profile({ token });
+    profile = fwdError(dispatch, api.profile({ token }));
   }
 
   let editBioState = false;
@@ -31,7 +35,11 @@
       return;
     }
 
-    profile = api.profile_update({ bio: editBioValue, token });
+    profile = fwdError(
+      dispatch,
+      api.profile_update({ bio: editBioValue, token })
+    );
+
     editBioState = false;
   }
 </script>
@@ -92,6 +100,10 @@
             >
           {/if}
         </div>
+      {:catch}
+        <span class="text-gray-500 text-center flex-1"
+          >Failed to load profile</span
+        >
       {/await}
     </div>
   {/if}
