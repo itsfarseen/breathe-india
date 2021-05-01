@@ -374,13 +374,13 @@ async fn posts(
                message
         FROM posts 
         WHERE post_type = $3 AND (
-            $4 = NULL OR
+            $4::text IS NULL OR
             state ILIKE $4 OR 
             district ILIKE $4 OR 
             city ILIKE $4 
             OR spot ILIKE $4
         ) AND (
-            $5 = NULL OR
+            $5::text IS NULL OR
             item ILIKE $5
         )
         OFFSET $1
