@@ -1,10 +1,11 @@
-use crate::slog_nested::WrapSerde;
 use rocket::http::Status;
 use rocket::request::Request;
 use rocket::response::Responder;
 use rocket_contrib::json::Json;
 use serde::Serialize;
 use std::error::Error;
+
+use crate::slog_nested::WrapSerde;
 
 pub trait HasStatusCode {
     fn get_status(&self) -> Status;
@@ -33,8 +34,9 @@ impl<'r, T: Serialize, E: Serialize + HasStatusCode> Responder<'r, 'static> for 
                 let method = req.method().to_string();
 
                 let error_chain: Vec<_> = e.chain().map(|e| e.to_string()).collect();
+                let error_chain = WrapSerde(error_chain);
 
-                slog::error!(logger, "E500"; "method" => method, "route_name" => route_name, "uri" => uri, "error_chain" => WrapSerde(error_chain));
+                slog::error!(logger, "E500"; "method" => method, "route_name" => route_name, "uri" => uri, "error_chain" => error_chain);
                 Err(rocket::http::Status::InternalServerError)
             }
         }

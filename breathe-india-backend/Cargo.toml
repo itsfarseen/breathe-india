@@ -15,11 +15,12 @@ jsonwebtoken = "7.2.0"
 once_cell = "1.7.2"
 reqwest = { version = "0.11.3", features = ["json"] }
 rocket = { git = "https://github.com/SergioBenitez/Rocket", rev="801e04bd5369eb39e126c75f6d11e1e9597304d8" }
+rocket_cors = { git = "https://github.com/lawliet89/rocket_cors" }
 rocket_contrib = { git = "https://github.com/SergioBenitez/Rocket", rev="801e04bd5369eb39e126c75f6d11e1e9597304d8" , default-features=false, features=["json", "uuid"]}
 serde = { version = "1.0.125", features = ["derive"] }
 slog = {version = "2.7.0", features = ["nested-values"]}
 slog-async = "2.6.0"
-slog-json = "2.3.0"
+slog-json = { version = "2.3", features = ["nested-values"] }
 sloggers = "1.0.1"
 sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres", "chrono", "uuid", "macros"] }
 thiserror = "1.0.24"

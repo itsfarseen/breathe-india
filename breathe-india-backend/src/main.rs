@@ -84,7 +84,7 @@ async fn main() -> Result<()> {
         .open("error_log.json")
         .context("Open error_log.json")?;
 
-    let error_log = slog_json::Json::new(error_log_file).build();
+    let error_log = slog_json::Json::default(error_log_file);
     let error_log = Mutex::new(error_log).map(slog::Fuse);
     let error_log = Logger::root(error_log, o!());
     let _ = LOGGER.set(error_log);
@@ -105,6 +105,36 @@ async fn main() -> Result<()> {
     let jwt_verifier = JwtVerifier { audience, issuers };
     let _ = JWT_VERIFIER.set(jwt_verifier);
 
+    let allowed_origins_str =
+        std::env::var("CORS_ALLOWED_ORIGINS").context("Get CORS_ALLOWED_ORIGINS env var")?;
+    let allowed_origins = allowed_origins_str
+        .split(' ')
+        .map(|s| s.to_owned())
+        .collect::<Vec<String>>();
+    let allowed_origins = rocket_cors::AllowedOrigins::some_exact(&allowed_origins);
+
+    // You can also deserialize this
+    let cors = rocket_cors::CorsOptions {
+        allowed_origins,
+        allowed_methods: vec![
+            rocket::http::Method::Get,
+            rocket::http::Method::Post,
+            rocket::http::Method::Patch,
+            rocket::http::Method::Delete,
+        ]
+        .into_iter()
+        .map(From::from)
+        .collect(),
+        allowed_headers: rocket_cors::AllowedHeaders::some(&[
+            "Authorization",
+            "Accept",
+            "Content-Type",
+        ]),
+        allow_credentials: false,
+        ..Default::default()
+    }
+    .to_cors()?;
+
     rocket::build()
         .mount(
             "/",
@@ -120,6 +150,7 @@ async fn main() -> Result<()> {
             ],
         )
         .manage(pool)
+        .attach(cors)
         .launch()
         .await
         .context("Launch rocket")?;
