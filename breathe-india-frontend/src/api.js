@@ -97,10 +97,7 @@ const postSchema = {
   },
 }
 const getPostsSchema = {
-  properties: {
-    posts: { elements: { ref: "Post" } },
-    users: { values: { ref: "User" } }
-  },
+  elements: { ref: "Post" },
   definitions: {
     "Post": postSchema,
     "User": publicProfileSchema,

@@ -332,12 +332,6 @@ pub struct Post {
     message: String,
 }
 
-#[derive(Serialize)]
-pub struct GetPosts {
-    posts: Vec<Post>,
-    users: HashMap<Uuid, ProfilePublic>,
-}
-
 #[get("/posts?<start>&<n>&<typ>&<location>&<item>")]
 async fn posts(
     start: Option<i64>,
@@ -346,7 +340,7 @@ async fn posts(
     mut location: Option<String>,
     mut item: Option<String>,
     db: State<'_, PgPool>,
-) -> MyRes<GetPosts, ()> {
+) -> MyRes<Vec<Post>, ()> {
     location.as_mut().map(|s| {
         s.insert(0, '%');
         s.push('%');
@@ -383,6 +377,7 @@ async fn posts(
             $5::text IS NULL OR
             item ILIKE $5
         )
+        ORDER BY updated_at DESC
         OFFSET $1
         LIMIT $2
         "#,
@@ -396,21 +391,7 @@ async fn posts(
     .await;
     let posts = fail!(res);
 
-    let userids: Vec<Uuid> = posts.iter().map(|p| p.userid).collect();
-    let res = sqlx::query_as!(
-        ProfilePublic,
-        r#"
-        SELECT id, name, bio, profile_pic_url FROM users
-        WHERE id = ANY($1)
-        "#,
-        &userids
-    )
-    .fetch_all(&*db)
-    .await;
-    let users = fail!(res);
-    let users = users.into_iter().map(|u| (u.id, u)).collect();
-
-    MyRes::Ok(GetPosts { users, posts })
+    MyRes::Ok(posts)
 }
 
 #[get("/my_posts")]

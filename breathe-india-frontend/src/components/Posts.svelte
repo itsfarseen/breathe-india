@@ -65,7 +65,7 @@
         Loading ..
       </h1>
     {:then posts}
-      {#each posts.posts as post}
+      {#each posts as post}
         <div class="p-4 flex gap-4 active:bg-gray-100">
           <div class="flex flex-col flex-1">
             <div class="text-lg font-medium text-gray-600">{post.item}</div>
