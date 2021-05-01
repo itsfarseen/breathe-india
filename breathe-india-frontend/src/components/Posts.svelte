@@ -48,7 +48,7 @@
           bind:value={location}
         />
       </label>
-      <button class="button" on:click={load}>Filter</button>
+      <button class="button" on:click={load}>Search</button>
     </div>
   </div>
   <div class="flex-1 flex flex-col divide-y divide-gray-300">
