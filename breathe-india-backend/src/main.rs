@@ -255,6 +255,9 @@ impl<'r> FromRequest<'r> for LoggedInUser {
         };
         let claims = match jwt::Claims::decode(token) {
             Ok(claims) => claims,
+            Err(jwt::DecodeError::TokenExpired) => {
+                return Outcome::Failure((Status::Unauthorized, ()));
+            }
             Err(_) => {
                 return Outcome::Failure((Status::BadRequest, ()));
             }
