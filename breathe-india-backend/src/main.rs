@@ -354,7 +354,7 @@ pub struct PostItem {
 #[derive(Serialize)]
 pub struct GetPosts {
     posts: Vec<PostFull>,
-    users: Vec<ProfilePublic>,
+    users: HashMap<Uuid, ProfilePublic>,
 }
 
 async fn get_posts_full(posts: Vec<Post>, db: &PgPool) -> Result<Vec<PostFull>> {
@@ -448,6 +448,7 @@ async fn posts(
     .fetch_all(&*db)
     .await;
     let users = fail!(res);
+    let users = users.into_iter().map(|u| (u.id, u)).collect();
 
     let posts_full = fail!(get_posts_full(posts, &*db).await);
 
