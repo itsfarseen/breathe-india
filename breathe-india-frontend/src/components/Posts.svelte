@@ -3,11 +3,20 @@
 
   import api from "../api";
   import { navigate } from "svelte-routing";
-  import Post from "./Post.svelte";
 
   export let type = "";
+  export let start = 0;
+  export let n = 100;
+  export let item = "";
+  export let location = "";
 
-  let posts = api.getPosts({ typ: type });
+  let posts;
+
+  function load() {
+    posts = api.getPosts({ typ: type, start, n, item, location });
+  }
+
+  load();
 
   const timeAgo = new TimeAgo("en-US");
 </script>
@@ -26,6 +35,7 @@
           placeholder={type === "Needs"
             ? "What is needed?"
             : "What is available?"}
+          bind:value={item}
         />
       </label>
       <label class="field">
@@ -35,8 +45,10 @@
           placeholder={type === "Needs"
             ? "Where is it needed?"
             : "Where is it available?"}
+          bind:value={location}
         />
       </label>
+      <button class="button" on:click={load}>Filter</button>
     </div>
   </div>
   <div class="flex-1 flex flex-col divide-y divide-gray-300">
