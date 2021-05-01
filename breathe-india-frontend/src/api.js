@@ -108,9 +108,26 @@ const getPostsSchema = {
 }
 const parseGetPostsResponse = ajv.compileParser(getPostsSchema)
 
-async function getPosts({ start, n, typ, location, item }) {
+async function getPosts({ start = null, n = null, typ, location = null, item = null }) {
+  let searchParams = {};
+  if (start) {
+    searchParams.start = start;
+  }
+  if (n) {
+    searchParams.n = n;
+  }
+  if (typ) {
+    searchParams.typ = typ;
+  }
+  if (location) {
+    searchParams.location = location;
+  }
+  if (item) {
+    searchParams.item = item;
+  }
   return await ky.get(BASE_URL + "/posts", {
-    searchParams: { start, n, typ, location, item },
+    // @ts-ignore
+    searchParams,
     parseJson: (text) => {
       const parse = parseGetPostsResponse;
       let data = parse(text);
