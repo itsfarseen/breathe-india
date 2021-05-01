@@ -18,12 +18,10 @@
   let city = "";
   let spot = "";
   let message = "";
-  /// @type: HTMLFormElement
   let form;
 
   let saving = false;
   async function save() {
-    let postItem = { item, quantity };
     let post = {
       post_type: typ,
       state,
@@ -31,7 +29,8 @@
       city,
       spot,
       message,
-      items: [postItem],
+      item,
+      quantity,
     };
 
     saving = true;

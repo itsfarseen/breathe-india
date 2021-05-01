@@ -308,6 +308,14 @@ pub enum PostType {
     Supplies,
 }
 
+#[derive(Serialize)]
+pub struct ProfilePublic {
+    id: Uuid,
+    name: String,
+    profile_pic_url: String,
+    bio: String,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Post {
     id: Uuid,
@@ -319,101 +327,36 @@ pub struct Post {
     spot: String,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
-    message: String,
-}
-
-#[derive(Serialize)]
-pub struct ProfilePublic {
-    id: Uuid,
-    name: String,
-    profile_pic_url: String,
-    bio: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct PostFull {
-    id: Uuid,
-    userid: Uuid,
-    post_type: PostType,
-    state: String,
-    district: String,
-    city: String,
-    spot: String,
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
-    message: String,
-    items: Vec<PostItem>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct PostItem {
-    id: Uuid,
-    post_id: Uuid,
     item: String,
     quantity: String,
+    message: String,
 }
 
 #[derive(Serialize)]
 pub struct GetPosts {
-    posts: Vec<PostFull>,
+    posts: Vec<Post>,
     users: HashMap<Uuid, ProfilePublic>,
 }
 
-async fn get_posts_full(posts: Vec<Post>, db: &PgPool) -> Result<Vec<PostFull>> {
-    let post_ids: Vec<Uuid> = posts.iter().map(|p| p.id).collect();
-
-    let res = sqlx::query_as!(
-        PostItem,
-        r#"
-        SELECT * FROM post_items
-        WHERE post_id = ANY($1)
-        "#,
-        &post_ids
-    )
-    .fetch_all(db)
-    .await;
-    let post_items = res?;
-
-    let mut posts_full: HashMap<Uuid, PostFull> = HashMap::new();
-    for post in posts {
-        posts_full.insert(
-            post.id,
-            PostFull {
-                id: post.id,
-                userid: post.userid,
-                post_type: post.post_type,
-                state: post.state,
-                district: post.district,
-                city: post.city,
-                spot: post.spot,
-                created_at: post.created_at,
-                updated_at: post.updated_at,
-                message: post.message,
-                items: Vec::new(),
-            },
-        );
-    }
-
-    if !posts_full.is_empty() {
-        for post_item in post_items {
-            posts_full
-                .get_mut(&post_item.post_id)
-                .map(|p| p.items.push(post_item));
-        }
-    }
-
-    let posts_full = posts_full.into_iter().map(|(_k, v)| v).collect();
-
-    Ok(posts_full)
-}
-
-#[get("/posts?<start>&<n>&<typ>")]
+#[get("/posts?<start>&<n>&<typ>&<location>&<item>")]
 async fn posts(
     start: Option<i64>,
     n: Option<i64>,
     typ: PostType,
+    mut location: Option<String>,
+    mut item: Option<String>,
     db: State<'_, PgPool>,
 ) -> MyRes<GetPosts, ()> {
+    location.as_mut().map(|s| {
+        s.insert(0, '%');
+        s.push('%');
+    });
+
+    item.as_mut().map(|s| {
+        s.insert(0, '%');
+        s.push('%');
+    });
+
     let res = sqlx::query_as!(
         Post,
         r#"
@@ -426,15 +369,28 @@ async fn posts(
                spot,
                created_at,
                updated_at,
+               item,
+               quantity,
                message
         FROM posts 
-        WHERE post_type = $3
+        WHERE post_type = $3 AND (
+            $4 = NULL OR
+            state ILIKE $4 OR 
+            district ILIKE $4 OR 
+            city ILIKE $4 
+            OR spot ILIKE $4
+        ) AND (
+            $5 = NULL OR
+            item ILIKE $5
+        )
         OFFSET $1
         LIMIT $2
         "#,
         start,
         n,
-        typ: _
+        typ: _,
+        location,
+        item
     )
     .fetch_all(&*db)
     .await;
@@ -454,16 +410,11 @@ async fn posts(
     let users = fail!(res);
     let users = users.into_iter().map(|u| (u.id, u)).collect();
 
-    let posts_full = fail!(get_posts_full(posts, &*db).await);
-
-    MyRes::Ok(GetPosts {
-        users,
-        posts: posts_full,
-    })
+    MyRes::Ok(GetPosts { users, posts })
 }
 
 #[get("/my_posts")]
-async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<PostFull>, ()> {
+async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<Post>, ()> {
     let res = sqlx::query_as!(
         Post,
         r#"
@@ -476,6 +427,8 @@ async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<PostFu
                spot,
                created_at,
                updated_at,
+               item,
+               quantity,
                message
         FROM posts 
         WHERE userid = $1
@@ -486,9 +439,7 @@ async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<PostFu
     .await;
     let posts = fail!(res);
 
-    let posts_full = fail!(get_posts_full(posts, &*db).await);
-
-    MyRes::Ok(posts_full)
+    MyRes::Ok(posts)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -499,11 +450,6 @@ pub struct PostNew {
     city: String,
     spot: String,
     message: String,
-    items: Vec<PostItemNew>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct PostItemNew {
     item: String,
     quantity: String,
 }
@@ -513,7 +459,7 @@ async fn posts_create(
     user: LoggedInUser,
     db: State<'_, PgPool>,
     data: Json<PostNew>,
-) -> MyRes<PostFull, ()> {
+) -> MyRes<Post, ()> {
     let res = sqlx::query_as!(
         Post,
         r#"INSERT INTO posts(
@@ -523,8 +469,10 @@ async fn posts_create(
             district,
             city,
             spot,
+            item, 
+            quantity,
             message
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING 
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING 
                id,
                userid,
                post_type as "post_type: _",
@@ -532,9 +480,11 @@ async fn posts_create(
                district,
                city,
                spot,
+               item,
+               quantity,
+               message,
                created_at,
-               updated_at,
-               message
+               updated_at
         "#,
         user.0,
         data.post_type: _,
@@ -542,45 +492,16 @@ async fn posts_create(
         data.district,
         data.city,
         data.spot,
+        data.item,
+        data.quantity,
         data.message
     )
     .fetch_one(&*db)
     .await;
 
     let post = fail!(res);
-    let mut items = Vec::new();
-    for item in &data.items {
-        let res = sqlx::query_as!(
-            PostItem,
-            r#"INSERT INTO post_items(
-            post_id, 
-            item,
-            quantity
-        ) VALUES ($1, $2, $3) RETURNING *"#,
-            post.id,
-            item.item,
-            item.quantity
-        )
-        .fetch_one(&*db)
-        .await;
-        let item = fail!(res);
-        items.push(item);
-    }
 
-    let post_full = PostFull {
-        id: post.id,
-        userid: post.userid,
-        post_type: post.post_type,
-        state: post.state,
-        district: post.district,
-        city: post.city,
-        spot: post.spot,
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        message: post.message,
-        items,
-    };
-    MyRes::Ok(post_full)
+    MyRes::Ok(post)
 }
 
 #[derive(Serialize)]
@@ -602,18 +523,20 @@ async fn posts_update(
     user: LoggedInUser,
     db: State<'_, PgPool>,
     data: Json<PostNew>,
-) -> MyRes<PostFull, PostUpdateError> {
+) -> MyRes<Post, PostUpdateError> {
     let id: Uuid = id.into_inner();
     let res = sqlx::query_as!(
         Post,
-        r#"UPDATE posts SET 
+        r#"UPDATE posts SET
             post_type = $3,
             state = $4,
             district = $5,
             city = $6,
             spot = $7,
             message = $8,
-            updated_at = $9
+            item = $9,
+            quantity = $10,
+            updated_at = $11
          WHERE id = $1 AND userid = $2
          RETURNING 
                id,
@@ -623,6 +546,8 @@ async fn posts_update(
                district,
                city,
                spot,
+               item,
+               quantity,
                created_at,
                updated_at,
                message
@@ -635,6 +560,8 @@ async fn posts_update(
         data.city,
         data.spot,
         data.message,
+        data.item,
+        data.quantity,
         chrono::Utc::now()
     )
     .fetch_optional(&*db)
@@ -643,44 +570,7 @@ async fn posts_update(
     let post = fail!(res);
     let post = bail!(post.ok_or(()), |_| PostUpdateError::NotFound);
 
-    let res = sqlx::query!(r#"DELETE FROM post_items WHERE post_id = $1"#, id,)
-        .execute(&*db)
-        .await;
-    let _ = fail!(res);
-
-    let mut items = Vec::new();
-    for item in &data.items {
-        let res = sqlx::query_as!(
-            PostItem,
-            r#"INSERT INTO post_items(
-                post_id, 
-                item,
-                quantity
-            ) VALUES ($1, $2, $3) RETURNING *"#,
-            post.id,
-            item.item,
-            item.quantity
-        )
-        .fetch_one(&*db)
-        .await;
-        let item = fail!(res);
-        items.push(item);
-    }
-
-    let post_full = PostFull {
-        id: post.id,
-        userid: post.userid,
-        post_type: post.post_type,
-        state: post.state,
-        district: post.district,
-        city: post.city,
-        spot: post.spot,
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        message: post.message,
-        items,
-    };
-    MyRes::Ok(post_full)
+    MyRes::Ok(post)
 }
 
 #[delete("/posts/<id>")]

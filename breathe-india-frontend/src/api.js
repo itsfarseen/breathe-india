@@ -79,14 +79,7 @@ const publicProfileSchema = {
     bio: { type: "string" },
   }
 };
-const postItemSchema = {
-  properties: {
-    id: { type: "string" },
-    post_id: { type: "string" },
-    item: { type: "string" },
-    quantity: { type: "string" },
-  }
-}
+
 const postSchema = {
   properties: {
     id: { type: "string" },
@@ -99,7 +92,8 @@ const postSchema = {
     created_at: { type: "timestamp" },
     updated_at: { type: "timestamp" },
     message: { type: "string" },
-    items: { elements: { ref: "PostItem" } },
+    item: { type: "string" },
+    quantity: { type: "string" },
   },
 }
 const getPostsSchema = {
@@ -110,14 +104,13 @@ const getPostsSchema = {
   definitions: {
     "Post": postSchema,
     "User": publicProfileSchema,
-    "PostItem": postItemSchema
   }
 }
 const parseGetPostsResponse = ajv.compileParser(getPostsSchema)
 
-async function getPosts({ start, n, typ }) {
+async function getPosts({ start, n, typ, location, item }) {
   return await ky.get(BASE_URL + "/posts", {
-    searchParams: { start, n, typ },
+    searchParams: { start, n, typ, location, item },
     parseJson: (text) => {
       const parse = parseGetPostsResponse;
       let data = parse(text);
@@ -133,7 +126,6 @@ const getMyPostsSchema = {
   elements: { ref: "Post" },
   definitions: {
     "Post": postSchema,
-    "PostItem": postItemSchema
   }
 };
 const parseGetMyPostsResponse = ajv.compileParser(getMyPostsSchema)
@@ -154,24 +146,10 @@ async function getMyPosts({ token }) {
   }).json()
 }
 
-const parseCreatePostResponse = ajv.compileParser({
-  ...postSchema,
-  definitions: {
-    "PostItem": postItemSchema
-  }
-});
-const validatePostItems = ajv.compile({
-  elements: {
-    properties: {
-      item: { type: "string" },
-      quantity: { type: "string" },
-    }
-  }
-})
-async function createPost({ post_type, state, district, city, spot, message, items, token }) {
-  if (!validatePostItems(items)) {
-    throw { errors: validatePostItems.errors };
-  }
+const parseCreatePostResponse = ajv.compileParser(postSchema);
+
+async function createPost({ post_type, state, district, city, spot, message, item, quantity, token }) {
+
 
   return await ky.post(BASE_URL + "/posts", {
     headers: {
@@ -184,7 +162,8 @@ async function createPost({ post_type, state, district, city, spot, message, ite
       city,
       spot,
       message,
-      items
+      item,
+      quantity,
     },
     parseJson: (text) => {
       const parse = parseCreatePostResponse;
@@ -197,10 +176,7 @@ async function createPost({ post_type, state, district, city, spot, message, ite
   }).json()
 }
 
-async function updatePost({ id, post_type, state, district, city, spot, message, items, token }) {
-  if (!validatePostItems(items)) {
-    throw { errors: validatePostItems.errors };
-  }
+async function updatePost({ id, post_type, state, district, city, spot, message, item, quantity, token }) {
 
   return await ky.patch(BASE_URL + "/posts/" + id, {
     headers: {
@@ -213,7 +189,8 @@ async function updatePost({ id, post_type, state, district, city, spot, message,
       city,
       spot,
       message,
-      items
+      item,
+      quantity
     },
     parseJson: (text) => {
       const parse = parseCreatePostResponse;
