@@ -68,7 +68,8 @@
           class="link"
           href="https://github.com/itsfarseen/breathe-india/issues"
           >https://github.com/itsfarseen/breathe-india/issues</a
-        ><br />
+        ><br /><br />
+        Or reach me on twitter: @itsfarseen
       </p>
     </div>
   </div>
