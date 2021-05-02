@@ -135,6 +135,29 @@ async function getPosts({ start = null, n = null, typ, location = null, item = n
     }
   }).json()
 }
+const getPostSingleSchema = {
+  properties: {
+    post: { ref: "Post" },
+    user: { ref: "User", nullable: true },
+  },
+  definitions: {
+    "Post": postSchema,
+    "User": publicProfileSchema,
+  }
+}
+const parseGetPostSingleResponse = ajv.compileParser(getPostSingleSchema);
+async function getPostSingle({ id }) {
+  return await ky.get(BASE_URL + "/posts/" + id, {
+    parseJson: (text) => {
+      const parse = parseGetPostSingleResponse;
+      let data = parse(text);
+      if (data === undefined) {
+        throw { message: parse.message, position: parse.position };
+      }
+      return data;
+    }
+  }).json()
+}
 
 const getMyPostsSchema = {
   elements: { ref: "Post" },
@@ -226,4 +249,4 @@ async function deletePost({ id, token }) {
   })
 }
 
-export default { login, profile, profileUpdate, getPosts, getMyPosts, createPost, updatePost, deletePost };
+export default { login, profile, profileUpdate, getPosts, getPostSingle, getMyPosts, createPost, updatePost, deletePost };

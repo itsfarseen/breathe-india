@@ -18,9 +18,9 @@ use slog::o;
 use slog::Drain;
 use slog::Logger;
 use sqlx::{postgres::PgPoolOptions, PgPool};
+use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Instant;
-use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -146,7 +146,8 @@ async fn main() -> Result<()> {
                 my_posts,
                 posts_create,
                 posts_update,
-                posts_delete
+                posts_delete,
+                post_single,
             ],
         )
         .manage(pool)
@@ -392,6 +393,61 @@ async fn posts(
     let posts = fail!(res);
 
     MyRes::Ok(posts)
+}
+
+#[derive(Serialize)]
+struct PostSingle {
+    post: Post,
+    user: Option<ProfilePublic>,
+}
+
+#[get("/posts/<id>")]
+async fn post_single(
+    id: rocket_contrib::uuid::Uuid,
+    db: State<'_, PgPool>,
+) -> MyRes<Option<PostSingle>, ()> {
+    let res = sqlx::query_as!(
+        Post,
+        r#"
+        SELECT posts.id,
+               userid,
+               post_type as "post_type: _",
+               state,
+               district,
+               city,
+               spot,
+               created_at,
+               updated_at,
+               item,
+               quantity,
+               message
+        FROM posts 
+        WHERE id = $1"#,
+        id.into_inner()
+    )
+    .fetch_optional(&*db)
+    .await;
+    let post = fail!(res);
+
+    if let Some(post) = post {
+        let mut user = None;
+        if let PostType::Supplies = post.post_type {
+            let res = sqlx::query_as!(
+                ProfilePublic,
+                r#"
+                SELECT id, name, profile_pic_url, bio
+                FROM users 
+                WHERE id = $1"#,
+                post.userid
+            )
+            .fetch_one(&*db)
+            .await;
+            user = Some(fail!(res));
+        }
+        MyRes::Ok(Some(PostSingle { post, user }))
+    } else {
+        MyRes::Ok(None)
+    }
 }
 
 #[get("/my_posts")]
