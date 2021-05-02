@@ -20,6 +20,8 @@
       api.login({ token: id_token })
     );
     dispatch("login", { token: our_token, userid });
+    let auth2 = window.gapi.auth2.getAuthInstance();
+    auth2.signOut();
   };
 
   $: if (token != null) {
@@ -44,6 +46,10 @@
     );
 
     editBioState = false;
+  }
+
+  async function logout() {
+    dispatch("logout", {});
   }
 </script>
 
@@ -97,11 +103,17 @@
             >
               {profile.bio}
             </div>
-            <button
-              class="text-gray-600 rounded px-2 py-1 border border-gray-400 self-start mt-1"
-              on:click={editBio}
-              >{profile.bio == "" ? "add" : "edit"} bio</button
-            >
+            <div class="flex gap-4">
+              <button
+                class="text-gray-600 rounded px-2 py-1 border border-gray-400 self-start mt-1"
+                on:click={editBio}
+                >{profile.bio == "" ? "add" : "edit"} bio</button
+              >
+              <button
+                class="text-gray-600 rounded px-2 py-1 border border-gray-400 self-start mt-1"
+                on:click={logout}>sign out</button
+              >
+            </div>
           {:else}
             <textarea
               class="rounded p-2 w-full text-sm leading-tight"

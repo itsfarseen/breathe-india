@@ -136,7 +136,12 @@
         {/if}
       </Route>
       <Route path="/me">
-        <Me on:login={onLogin} token={jwt} on:error={onError} />
+        <Me
+          on:login={onLogin}
+          on:logout={onLogout}
+          token={jwt}
+          on:error={onError}
+        />
       </Route>
       <Route>
         <E404 />
