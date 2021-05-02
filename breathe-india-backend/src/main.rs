@@ -69,7 +69,7 @@ static JWT_VERIFIER: OnceCell<JwtVerifier> = OnceCell::new();
 
 #[rocket::main]
 async fn main() -> Result<()> {
-    dotenv()?;
+    let _ = dotenv(); // ignore the result. we don't want to fail if .env is not present.
     let db_url = std::env::var("DATABASE_URL").context("Get DATABASE_URL env var")?;
     let pool = PgPoolOptions::new()
         .max_connections(5)
