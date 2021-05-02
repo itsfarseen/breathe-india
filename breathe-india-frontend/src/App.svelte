@@ -7,6 +7,7 @@
   import Posts from "./components/Posts.svelte";
   import PostEdit from "./components/PostEdit.svelte";
   import PostDelete from "./components/PostDelete.svelte";
+  import Help from "./components/Help.svelte";
 
   let linkClass =
     "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
@@ -97,8 +98,12 @@
 <Router>
   <div class="flex flex-col h-screen">
     <header class="bg-green-800 text-white flex flex-col shadow-md z-10">
-      <div class="p-4 pb-2 flex">
-        <h1 class="text-xl font-bold">Breathe India</h1>
+      <div class="p-4 flex">
+        <h1 class="text-xl font-bold flex-1">Breathe India</h1>
+        <button
+          class="text-sm bg-green-700 border-green-100 px-3 p-1 rounded shadow-sm active:shadow-none active:bg-green-900"
+          on:click={() => navigate("/help")}>How to use</button
+        >
       </div>
       <div class="flex">
         <NavLink klass={linkClass} activeKlass={activeTabClass} to="/needs">
@@ -113,6 +118,9 @@
       </div>
     </header>
     <main class="flex-1 flex flex-col overflow-y-scroll">
+      <Route path="/help">
+        <Help />
+      </Route>
       <Route path="/needs">
         <Posts type="Needs" on:error={onError} />
       </Route>
