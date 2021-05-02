@@ -35,7 +35,7 @@
     <button class="button" on:click={() => navigate("/post/new/" + type)}
       >New Post</button
     >
-    <div class="flex flex-col gap-1">
+    <form on:submit|preventDefault={load} class="flex flex-col gap-1">
       <div class="text-sm uppercase font-medium text-gray-500">Filter</div>
       <label class="field">
         <span>Item</span>
@@ -57,8 +57,8 @@
           bind:value={location}
         />
       </label>
-      <button class="button" on:click={load}>Search</button>
-    </div>
+      <button class="button">Search</button>
+    </form>
   </div>
   <div class="flex-1 flex flex-col divide-y divide-gray-300">
     {#await posts}
@@ -70,6 +70,10 @@
     {:then posts}
       {#each posts as post}
         <PostRow {post} />
+      {:else}
+        <h1 class="text-2xl mt-16 text-center font-bold text-gray-400">
+          empty.
+        </h1>
       {/each}
     {/await}
   </div>
