@@ -6,6 +6,7 @@
   import Post from "./components/Post.svelte";
   import Posts from "./components/Posts.svelte";
   import PostEdit from "./components/PostEdit.svelte";
+  import PostDelete from "./components/PostDelete.svelte";
 
   let linkClass =
     "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
@@ -123,6 +124,9 @@
       </Route>
       <Route path="/post/:id/update" let:params>
         <PostEdit post_id={params.id} token={jwt} on:error={onError} />
+      </Route>
+      <Route path="/post/:id/delete" let:params>
+        <PostDelete post_id={params.id} token={jwt} on:error={onError} />
       </Route>
       <Route path="/post/new/:typ" let:params>
         <PostEdit typ={params.typ} token={jwt} on:error={onError} />

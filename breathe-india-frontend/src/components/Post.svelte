@@ -141,7 +141,11 @@
         on:click={() => navigate("/post/" + res.post.id + "/update")}
         >Update</button
       >
-      <button class="button-neutral">Delete</button>
+      <button
+        class="button-danger"
+        on:click={() => navigate("/post/" + res.post.id + "/delete")}
+        >Delete</button
+      >
     {/if}
   {/await}
 </div>

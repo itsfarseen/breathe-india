@@ -1,11 +1,11 @@
 <script>
   import PostRow from "./PostRow.svelte";
 
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import TimeAgo from "javascript-time-ago";
   import api from "../api";
   import { navigate } from "svelte-routing";
-  import { fwdError } from "../utils";
+  import { fwdError, rememberLastMainTab } from "../utils";
 
   export let type = "";
   export let start = 0;
@@ -13,6 +13,7 @@
   export let item = "";
   export let location = "";
 
+  onMount(rememberLastMainTab);
   const dispatch = createEventDispatcher();
 
   let posts;

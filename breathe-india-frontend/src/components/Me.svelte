@@ -1,13 +1,15 @@
 <script>
   import PostRow from "./PostRow.svelte";
   import api from "../api";
-  import { fwdError } from "../utils";
-  import { createEventDispatcher } from "svelte";
+  import { fwdError, rememberLastMainTab } from "../utils";
+  import { createEventDispatcher, onMount } from "svelte";
   export let token = null;
   let profile = null;
   let posts = null;
   let needs = null;
   let supplies = null;
+
+  onMount(rememberLastMainTab);
 
   const dispatch = createEventDispatcher();
 

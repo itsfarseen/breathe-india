@@ -184,7 +184,7 @@ impl HasStatusCode for LoginErr {
 
 impl HasStatusCode for () {
     fn get_status(&self) -> Status {
-        panic!("No status code for ()")
+        Status::NotFound
     }
 }
 
@@ -409,7 +409,7 @@ struct PostSingle {
 async fn post_single(
     id: rocket_contrib::uuid::Uuid,
     db: State<'_, PgPool>,
-) -> MyRes<Option<PostSingle>, ()> {
+) -> MyRes<PostSingle, ()> {
     let res = sqlx::query_as!(
         Post,
         r#"
@@ -448,9 +448,9 @@ async fn post_single(
             .await;
             user = Some(fail!(res));
         }
-        MyRes::Ok(Some(PostSingle { post, user }))
+        MyRes::Ok(PostSingle { post, user })
     } else {
-        MyRes::Ok(None)
+        MyRes::Err(())
     }
 }
 
