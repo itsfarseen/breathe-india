@@ -133,7 +133,7 @@
             {#each posts as post}
               <PostRow {post} />
             {:else}
-              <h1 class="text-2xl text-center font-bold text-gray-400">
+              <h1 class="mb-4 text-2xl text-center font-bold text-gray-400">
                 empty.
               </h1>
             {/each}
@@ -145,7 +145,7 @@
             {#each posts as post}
               <PostRow {post} />
             {:else}
-              <h1 class="text-2xl text-center font-bold text-gray-400">
+              <h1 class="mb-4 text-2xl text-center font-bold text-gray-400">
                 empty.
               </h1>
             {/each}
