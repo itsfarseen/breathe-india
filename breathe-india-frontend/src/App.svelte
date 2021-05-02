@@ -129,7 +129,11 @@
         <PostDelete post_id={params.id} token={jwt} on:error={onError} />
       </Route>
       <Route path="/post/new/:typ" let:params>
-        <PostEdit typ={params.typ} token={jwt} on:error={onError} />
+        {#if jwt == null}
+          <Me on:login={onLogin} token={jwt} on:error={onError} />
+        {:else}
+          <PostEdit typ={params.typ} token={jwt} on:error={onError} />
+        {/if}
       </Route>
       <Route path="/me">
         <Me on:login={onLogin} token={jwt} on:error={onError} />
