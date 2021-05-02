@@ -7,9 +7,11 @@
   import { navigate } from "svelte-routing";
   import { fwdError, rememberLastMainTab } from "../utils";
 
+  const N = 20;
+
   export let type = "";
   export let start = 0;
-  export let n = 100;
+  export let n = N;
   export let item = "";
   export let location = "";
 
