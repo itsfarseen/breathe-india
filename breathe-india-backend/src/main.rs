@@ -1,4 +1,3 @@
-#![feature(error_iter)]
 #[macro_use]
 extern crate rocket;
 #[macro_use]

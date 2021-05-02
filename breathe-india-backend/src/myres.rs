@@ -33,7 +33,19 @@ impl<'r, T: Serialize, E: Serialize + HasStatusCode> Responder<'r, 'static> for 
                 let uri = req.uri().to_string();
                 let method = req.method().to_string();
 
-                let error_chain: Vec<_> = e.chain().map(|e| e.to_string()).collect();
+                let mut error_chain = Vec::new();
+                let mut e: &dyn Error = &e.as_ref();
+
+                error_chain.push(e.to_string());
+                loop {
+                    if let Some(e_src) = e.source() {
+                        e = e_src;
+                        error_chain.push(e.to_string());
+                    } else {
+                        break;
+                    }
+                }
+
                 let error_chain = WrapSerde(error_chain);
 
                 slog::error!(logger, "E500"; "method" => method, "route_name" => route_name, "uri" => uri, "error_chain" => error_chain);
