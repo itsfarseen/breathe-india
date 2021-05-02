@@ -119,31 +119,39 @@
         >
       {/await}
     </div>
-    <div class="flex flex-col">
-      <h1 class="text-2xl font-bold text-gray-500 m-4">I need ..</h1>
-      {#await needs}
-        Loading
-      {:then posts}
-        <div class="bg-white flex flex-col divide-y divide-gray-300">
-          {#each posts as post}
-            <PostRow {post} />
-          {:else}
-            Nothing found
-          {/each}
-        </div>
-      {/await}
-      <h1 class="text-2xl font-bold text-gray-500 m-4">I can supply ..</h1>
-      {#await supplies}
-        Loading
-      {:then posts}
-        <div class="bg-white flex flex-col divide-y divide-gray-300">
-          {#each posts as post}
-            <PostRow {post} />
-          {:else}
-            Nothing found
-          {/each}
-        </div>
-      {/await}
-    </div>
+    {#await posts}
+      <h1
+        class="text-2xl mt-16 text-center font-bold text-gray-500 animate-pulse"
+      >
+        Loading ..
+      </h1>
+    {:then}
+      <div class="flex flex-col">
+        <h1 class="text-2xl font-bold text-gray-500 m-4">I need ..</h1>
+        {#await needs then posts}
+          <div class="flex flex-col divide-y divide-gray-300">
+            {#each posts as post}
+              <PostRow {post} />
+            {:else}
+              <h1 class="text-2xl text-center font-bold text-gray-400">
+                empty.
+              </h1>
+            {/each}
+          </div>
+        {/await}
+        <h1 class="text-2xl font-bold text-gray-500 m-4">I can supply ..</h1>
+        {#await supplies then posts}
+          <div class="flex flex-col divide-y divide-gray-300">
+            {#each posts as post}
+              <PostRow {post} />
+            {:else}
+              <h1 class="text-2xl text-center font-bold text-gray-400">
+                empty.
+              </h1>
+            {/each}
+          </div>
+        {/await}
+      </div>
+    {/await}
   {/if}
 </div>

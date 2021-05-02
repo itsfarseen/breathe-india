@@ -8,7 +8,7 @@
 </script>
 
 <div
-  class="p-4 flex gap-4 active:bg-gray-100"
+  class="p-4 flex gap-4 bg-white active:bg-gray-100"
   on:click={() => navigate("/post/" + post.id)}
 >
   <div class="flex flex-col flex-1">
