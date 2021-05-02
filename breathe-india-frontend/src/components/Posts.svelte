@@ -1,4 +1,6 @@
 <script>
+  import PostRow from "./PostRow.svelte";
+
   import { createEventDispatcher } from "svelte";
   import TimeAgo from "javascript-time-ago";
   import api from "../api";
@@ -66,23 +68,7 @@
       </h1>
     {:then posts}
       {#each posts as post}
-        <div
-          class="p-4 flex gap-4 active:bg-gray-100"
-          on:click={() => navigate("/post/" + post.id)}
-        >
-          <div class="flex flex-col flex-1">
-            <div class="text-lg font-medium text-gray-600">{post.item}</div>
-            <div class="text-sm text-gray-600">
-              {post.quantity} at {post.spot}
-            </div>
-            <div class="text-sm text-gray-600">
-              {[post.city, post.district, post.state].join(", ")}
-            </div>
-          </div>
-          <div class="text-gray-500">
-            {timeAgo.format(new Date(post.updated_at), "mini")}
-          </div>
-        </div>
+        <PostRow {post} />
       {/each}
     {/await}
   </div>

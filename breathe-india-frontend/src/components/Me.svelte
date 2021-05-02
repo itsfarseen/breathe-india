@@ -1,9 +1,13 @@
 <script>
+  import PostRow from "./PostRow.svelte";
   import api from "../api";
   import { fwdError } from "../utils";
   import { createEventDispatcher } from "svelte";
   export let token = null;
   let profile = null;
+  let posts = null;
+  let needs = null;
+  let supplies = null;
 
   const dispatch = createEventDispatcher();
 
@@ -18,6 +22,9 @@
 
   $: if (token != null) {
     profile = fwdError(dispatch, api.profile({ token }));
+    posts = fwdError(dispatch, api.getMyPosts({ token }));
+    needs = posts.then((ps) => ps.filter((p) => p.post_type == "Needs"));
+    supplies = posts.then((ps) => ps.filter((p) => p.post_type == "Supplies"));
   }
 
   let editBioState = false;
@@ -108,6 +115,32 @@
         <span class="text-gray-500 text-center flex-1"
           >Failed to load profile</span
         >
+      {/await}
+    </div>
+    <div class="flex flex-col">
+      <h1 class="text-2xl font-bold text-gray-500 m-4">I need ..</h1>
+      {#await needs}
+        Loading
+      {:then posts}
+        <div class="bg-white flex flex-col divide-y divide-gray-300">
+          {#each posts as post}
+            <PostRow {post} />
+          {:else}
+            Nothing found
+          {/each}
+        </div>
+      {/await}
+      <h1 class="text-2xl font-bold text-gray-500 m-4">I can supply ..</h1>
+      {#await supplies}
+        Loading
+      {:then posts}
+        <div class="bg-white flex flex-col divide-y divide-gray-300">
+          {#each posts as post}
+            <PostRow {post} />
+          {:else}
+            Nothing found
+          {/each}
+        </div>
       {/await}
     </div>
   {/if}
