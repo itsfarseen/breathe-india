@@ -2,7 +2,6 @@
   import PostRow from "./PostRow.svelte";
 
   import { createEventDispatcher, onMount } from "svelte";
-  import TimeAgo from "javascript-time-ago";
   import api from "../api";
   import { navigate } from "svelte-routing";
   import { fwdError, rememberLastMainTab } from "../utils";
@@ -38,8 +37,6 @@
     start -= N;
     load();
   }
-
-  const timeAgo = new TimeAgo("en-US");
 </script>
 
 <div class="flex flex-col">
