@@ -63,7 +63,7 @@
       Sign In
     </h1>
     <div
-      class="g-signin2"
+      class="g-signin2 self-center"
       data-longtitle="true"
       data-onsuccess="onGoogleSignin"
     />
