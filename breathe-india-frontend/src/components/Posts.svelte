@@ -83,7 +83,7 @@
       {#each posts as post}
         <PostRow {post} />
       {:else}
-        <h1 class="text-2xl mt-16 text-center font-bold text-gray-400">
+        <h1 class="text-2xl my-16 text-center font-bold text-gray-400">
           empty.
         </h1>
       {/each}
@@ -92,7 +92,7 @@
           <button class="button" on:click={loadPrev}>Prev</button>
         {/if}
         <div class="flex-1" />
-        {#if posts.length > 0}
+        {#if posts.length >= N}
           <button class="button" on:click={loadNext}>Next</button>
         {/if}
       </div>
