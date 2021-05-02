@@ -71,7 +71,7 @@
     <div class="bg-gray-100 p-4 gap-4 flex">
       {#await profile}
         <div class="flex flex-1 gap-4 animate-pulse">
-          <div class="w-24 h-24 rounded-full self-start bg-gray-200" />
+          <div class="w-20 h-20 rounded-full self-start bg-gray-200" />
           <div class="flex-1 flex flex-col justify-start leading-tight gap-2">
             <div class="flex flex-col gap-1">
               <div class="bg-gray-200 h-6" />
@@ -84,12 +84,12 @@
         <img
           src={profile.profile_pic_url}
           alt="Profile"
-          class="w-24 rounded-full self-start"
+          class="w-20 rounded-full self-start"
         />
         <div class="flex flex-col justify-start leading-tight gap-1">
           <div>
-            <div class="text-xl font-semibold">{profile.name}</div>
-            <div class="font-medium text-gray-500">{profile.email}</div>
+            <div class="text-lg font-semibold">{profile.name}</div>
+            <div class="text-sm font-medium text-gray-500">{profile.email}</div>
           </div>
           {#if !editBioState}
             <div

@@ -28,7 +28,7 @@
         />
         <div class="flex flex-col justify-start leading-tight gap-1">
           <div>
-            <div class="text-xl font-semibold">{res.user.name}</div>
+            <div class="text-lg font-semibold">{res.user.name}</div>
           </div>
           <div class="text-gray-500 text-sm leading-tight whitespace-pre-wrap">
             {res.user.bio}
