@@ -8,6 +8,7 @@
   import PostEdit from "./components/PostEdit.svelte";
   import PostDelete from "./components/PostDelete.svelte";
   import Help from "./components/Help.svelte";
+  import Home from "./components/Home.svelte";
 
   let linkClass =
     "flex-1 text-center p-3 border-b-4 uppercase text-sm font-semibold border-transparent hover:border-white";
@@ -150,6 +151,9 @@
           token={jwt}
           on:error={onError}
         />
+      </Route>
+      <Route path="/">
+        <Home />
       </Route>
       <Route>
         <E404 />
