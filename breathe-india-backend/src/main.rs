@@ -77,6 +77,10 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| format!("Connect to postgres - {}", db_url))?;
 
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await?;
+
     let error_log_file = std::fs::OpenOptions::new()
         .append(true)
         .create(true)
