@@ -29,6 +29,16 @@
 
   load();
 
+  function loadNext() {
+    start += N;
+    load();
+  }
+
+  function loadPrev() {
+    start -= N;
+    load();
+  }
+
   const timeAgo = new TimeAgo("en-US");
 </script>
 
@@ -77,6 +87,15 @@
           empty.
         </h1>
       {/each}
+      <div class="flex p-2 gap-2">
+        {#if start > 0}
+          <button class="button" on:click={loadPrev}>Prev</button>
+        {/if}
+        <div class="flex-1" />
+        {#if posts.length > 0}
+          <button class="button" on:click={loadNext}>Next</button>
+        {/if}
+      </div>
     {/await}
   </div>
 </div>
