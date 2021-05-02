@@ -165,6 +165,7 @@ struct Login {
 
 #[derive(Serialize)]
 struct LoginSuccess {
+    userid: Uuid,
     our_token: String,
 }
 
@@ -232,7 +233,10 @@ async fn login(data: Json<Login>, db: State<'_, PgPool>) -> MyRes<LoginSuccess, 
 
     let our_jwt = fail!(our_claims.encode());
 
-    let resp = LoginSuccess { our_token: our_jwt };
+    let resp = LoginSuccess {
+        userid,
+        our_token: our_jwt,
+    };
 
     MyRes::Ok(resp)
 }
@@ -469,6 +473,7 @@ async fn my_posts(user: LoggedInUser, db: State<'_, PgPool>) -> MyRes<Vec<Post>,
                message
         FROM posts 
         WHERE userid = $1
+        ORDER BY updated_at DESC
         "#,
         user.0
     )

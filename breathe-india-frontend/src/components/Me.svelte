@@ -13,11 +13,11 @@
 
   window.onGoogleSignin = async (googleUser) => {
     let id_token = googleUser.getAuthResponse().id_token;
-    let { our_token } = await fwdError(
+    let { our_token, userid } = await fwdError(
       dispatch,
       api.login({ token: id_token })
     );
-    dispatch("login", { token: our_token });
+    dispatch("login", { token: our_token, userid });
   };
 
   $: if (token != null) {

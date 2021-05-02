@@ -2,12 +2,17 @@
   import { createEventDispatcher } from "svelte";
   import { fwdError } from "../utils";
   import api from "../api";
+  import TimeAgo from "javascript-time-ago";
+  import { navigate } from "svelte-routing";
+
+  const timeAgo = new TimeAgo("en-US");
 
   export let post_id = "";
+  export let userid = "";
 
   const dispatch = createEventDispatcher();
 
-  let post = api.getPostSingle({ id: post_id });
+  let post = fwdError(dispatch, api.getPostSingle({ id: post_id }));
 </script>
 
 <div class="flex flex-col bg-gray-100 p-4 gap-2 min-h-screen justify-start">
@@ -112,6 +117,32 @@
       placeholder="How to contact you, anything else to note, etc"
       value={res.post.message}
     />
+    <label class="field">
+      <span>Posted</span>
+      <input
+        class="input"
+        size="1"
+        readonly
+        value={new Date(res.post.created_at).toLocaleString()}
+      />
+    </label>
+    <label class="field">
+      <span>Updated</span>
+      <input
+        class="input"
+        size="1"
+        readonly
+        value={new Date(res.post.updated_at).toLocaleString()}
+      />
+    </label>
+    {#if userid == res.post.userid}
+      <button
+        class="button"
+        on:click={() => navigate("/post/" + res.post.id + "/update")}
+        >Update</button
+      >
+      <button class="button-neutral">Delete</button>
+    {/if}
   {/await}
 </div>
 

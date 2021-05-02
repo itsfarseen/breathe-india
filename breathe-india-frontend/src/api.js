@@ -6,7 +6,8 @@ const BASE_URL = "http://localhost:8089"
 
 const parseLoginResponse = ajv.compileParser({
   properties: {
-    our_token: { type: "string" }
+    our_token: { type: "string" },
+    userid: { type: "string" }
   },
 });
 

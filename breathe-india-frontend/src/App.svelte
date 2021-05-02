@@ -13,15 +13,20 @@
   let activeTabClass = "border-gray-200";
 
   let jwt = localStorage.getItem("breathe_india_jwt");
+  let userid = localStorage.getItem("breathe_india_userid");
 
   function onLogin(e) {
     jwt = e.detail.token;
+    userid = e.detail.userid;
     localStorage.setItem("breathe_india_jwt", jwt);
+    localStorage.setItem("breathe_india_userid", userid);
   }
 
   function onLogout() {
     localStorage.removeItem("breathe_india_jwt");
+    localStorage.removeItem("breathe_india_userid");
     jwt = null;
+    userid = null;
   }
 
   function onError(e) {
@@ -114,7 +119,7 @@
         <Posts type="Supplies" on:error={onError} />
       </Route>
       <Route path="/post/:id" let:params>
-        <Post post_id={params.id} on:error={onError} />
+        <Post post_id={params.id} on:error={onError} {userid} />
       </Route>
       <Route path="/post/:id/update" let:params>
         <PostEdit post_id={params.id} token={jwt} on:error={onError} />

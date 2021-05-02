@@ -20,6 +20,21 @@
   let message = "";
   let form;
 
+  async function load() {
+    if (post_id != null) {
+      let { post } = await api.getPostSingle({ id: post_id });
+      typ = post.post_type;
+      item = post.item;
+      quantity = post.quantity;
+      state = post.state;
+      district = post.district;
+      city = post.city;
+      spot = post.spot;
+      message = post.message;
+    }
+  }
+  load();
+
   let saving = false;
   async function save() {
     let post = {
@@ -153,7 +168,7 @@
       Update
     {/if}
   </button>
-  <button class="button-neutral" on:click={cancel}>Cancel</button>
+  <button class="button-neutral" type="reset" on:click={cancel}>Cancel</button>
 </form>
 
 <style>
