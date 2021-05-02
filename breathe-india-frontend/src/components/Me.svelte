@@ -57,7 +57,7 @@
   {/if}
 </svelte:head>
 
-<div class="bg-gray-200 flex flex-col flex-1">
+<div class="bg-gray-100 flex flex-col flex-1">
   {#if token == null}
     <h1 class="text-4xl font-bold text-gray-500 mt-16 mb-8 text-center">
       Sign In
@@ -68,7 +68,7 @@
       data-onsuccess="onGoogleSignin"
     />
   {:else}
-    <div class="bg-gray-100 p-4 gap-4 flex">
+    <div class="bg-gray-50 p-4 gap-4 flex">
       {#await profile}
         <div class="flex flex-1 gap-4 animate-pulse">
           <div class="w-20 h-20 rounded-full self-start bg-gray-200" />
