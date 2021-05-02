@@ -49,7 +49,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="Oxygen"
+        placeholder="N/A"
         value={res.post.item}
       />
     </label>
@@ -59,7 +59,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="20L"
+        placeholder="N/A"
         value={res.post.quantity}
       />
     </label>
@@ -76,7 +76,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="Kerala"
+        placeholder="N/A"
         value={res.post.state}
       />
     </label>
@@ -86,7 +86,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="Kannur"
+        placeholder="N/A"
         value={res.post.district}
       />
     </label>
@@ -96,7 +96,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="Anjarakkandy"
+        placeholder="N/A"
         value={res.post.city}
       />
     </label>
@@ -106,7 +106,7 @@
         class="input"
         size="1"
         readonly
-        placeholder="Kannur Govt. Medical College"
+        placeholder="N/A"
         value={res.post.spot}
       />
     </label>
@@ -114,7 +114,7 @@
     <textarea
       readonly
       class="input"
-      placeholder="How to contact you, anything else to note, etc"
+      placeholder="N/A"
       value={res.post.message}
     />
     <label class="field">
