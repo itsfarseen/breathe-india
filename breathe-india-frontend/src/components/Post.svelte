@@ -36,6 +36,9 @@
         </div>
       </div>
     {/if}
+    <div class="text-gray-500 text-xs italics">
+      Sl. No: <span class="uppercase">{res.post.id.slice(0, 6)}</span>
+    </div>
     <h1 class="text-2xl font-bold text-gray-500">
       {#if res.post.post_type == "Needs"}
         need ..
