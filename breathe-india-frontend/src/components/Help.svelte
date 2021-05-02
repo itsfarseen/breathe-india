@@ -25,6 +25,10 @@
         <br /><br />
         After that, if possible, go to "Needs" section and find deserving people
         who are in dire need of the good and try to arrange it for them.
+        <br /><br />
+        Please update your post from time to time so that the information doesn't
+        go stale. In addition, since the listing is sorted by last update time, updating
+        your post will make it appear in the front.
       </p>
     </div>
     <div>
@@ -53,7 +57,25 @@
         Built with Rust and Svelte, the app is supposed to be blazing fast, even
         on phones that are up to 5 years old. Please file an issue if you feel
         otherwise.
+        <br />
+        <br />
+        Source code: <br />
+        <a class="link" href="https://github.com/itsfarseen/breathe-india/"
+          >https://github.com/itsfarseen/breathe-india/</a
+        ><br /><br />
+        File issues here:<br />
+        <a
+          class="link"
+          href="https://github.com/itsfarseen/breathe-india/issues"
+          >https://github.com/itsfarseen/breathe-india/issues</a
+        ><br />
       </p>
     </div>
   </div>
 </div>
+
+<style>
+  .link {
+    @apply text-green-600;
+  }
+</style>
