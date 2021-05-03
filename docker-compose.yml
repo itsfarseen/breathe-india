@@ -14,8 +14,6 @@ services:
     build: ./breathe-india-frontend
     volumes:
       - frontend_dist:/app/nginx_volume
-    env_file:
-      - ./frontend.env
     depends_on:
       - backend
   backend:
