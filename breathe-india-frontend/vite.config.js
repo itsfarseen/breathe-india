@@ -8,6 +8,12 @@ export default defineConfig({
     exclude: ['svelte-routing']
   },
   server: {
-    '/api': 'http://localhost:8089/'
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8089',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })
