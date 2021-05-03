@@ -2,7 +2,7 @@ import ky from 'ky';
 import Ajv from 'ajv/dist/jtd';
 const ajv = new Ajv();
 
-let BASE_URL = import.meta.env.VITE_API_BASE_URL;
+let BASE_URL = "/api"
 
 const parseLoginResponse = ajv.compileParser({
   properties: {

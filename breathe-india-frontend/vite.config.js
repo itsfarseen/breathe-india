@@ -6,5 +6,8 @@ export default defineConfig({
   plugins: [svelte()],
   optimizeDeps: {
     exclude: ['svelte-routing']
+  },
+  server: {
+    '/api': 'http://localhost:8089/'
   }
 })
