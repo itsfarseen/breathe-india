@@ -36,4 +36,5 @@ RUN cargo build --release
 FROM alpine:3.13 as runtime
 WORKDIR app
 COPY --from=builder /app/target/release/breathe-india-backend .
-ENTRYPOINT ["./breathe-india-backend"]
+COPY ./docker-entrypoint.sh .
+ENTRYPOINT ["./docker-entrypoint.sh"]
