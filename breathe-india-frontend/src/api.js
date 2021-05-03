@@ -2,16 +2,7 @@ import ky from 'ky';
 import Ajv from 'ajv/dist/jtd';
 const ajv = new Ajv();
 
-function loadBaseUrl() {
-    const prod = "${API_BASE_URL}";
-    // check if the variable has been replaced by envsubst
-    if(prod != "${"+"API"+"_BASE_URL"+"}") {
-        return prod;
-    }
-    return import.meta.env.VITE_API_BASE_URL;
-}
-
-const BASE_URL = loadBaseUrl();
+let BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const parseLoginResponse = ajv.compileParser({
   properties: {
