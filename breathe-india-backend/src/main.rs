@@ -231,7 +231,7 @@ async fn login(data: Json<Login>, db: State<'_, PgPool>) -> MyRes<LoginSuccess, 
 
     let our_claims = jwt::Claims {
         sub: userid,
-        exp: (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp() as usize,
+        exp: (chrono::Utc::now() + chrono::Duration::days(30)).timestamp() as usize,
     };
 
     let our_jwt = fail!(our_claims.encode());
