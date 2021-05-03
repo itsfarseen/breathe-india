@@ -12,12 +12,14 @@ services:
       - backend
   frontend:
     build: ./breathe-india-frontend
+    image: localhost:5000/breathe-india/frontend:latest
     volumes:
       - frontend_dist:/app/nginx_volume
     depends_on:
       - backend
   backend:
     build: ./breathe-india-backend
+    image: localhost:5000/breathe-india/backend:latest
     env_file:
       - ./backend.env
     depends_on:
