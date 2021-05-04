@@ -94,7 +94,12 @@
         />
         <div class="flex flex-col justify-start leading-tight gap-1">
           <div>
-            <div class="text-lg font-semibold">{profile.name}</div>
+            <div class="flex items-center gap-2">
+              <div class="text-lg font-semibold">{profile.name}</div>
+              {#if profile.verified}
+                <img src="/verified.png" alt="Verified badge" class="w-4 h-4" />
+              {/if}
+            </div>
             <div class="text-sm font-medium text-gray-500">{profile.email}</div>
           </div>
           {#if !editBioState}

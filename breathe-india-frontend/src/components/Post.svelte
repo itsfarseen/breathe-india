@@ -27,8 +27,11 @@
           class="w-16 rounded-full self-start"
         />
         <div class="flex flex-col justify-start leading-tight gap-1">
-          <div>
+          <div class="flex items-center gap-2">
             <div class="text-lg font-semibold">{res.user.name}</div>
+            {#if res.user.verified}
+              <img src="/verified.png" alt="Verified badge" class="w-4 h-4" />
+            {/if}
           </div>
           <div class="text-gray-500 text-sm leading-tight whitespace-pre-wrap">
             {res.user.bio}
