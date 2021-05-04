@@ -7,4 +7,6 @@ pub struct User {
     pub email: String,
     pub profile_pic_url: String,
     pub bio: String,
+    pub verified: bool,
+    pub admin: bool
 }

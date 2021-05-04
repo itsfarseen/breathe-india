@@ -1,0 +1,4 @@
+-- Add up migration script here
+ALTER TABLE users 
+    ADD COLUMN verified BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN admin BOOLEAN NOT NULL DEFAULT FALSE;

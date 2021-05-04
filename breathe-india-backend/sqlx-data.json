@@ -271,6 +271,16 @@
           "ordinal": 4,
           "name": "bio",
           "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "verified",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 6,
+          "name": "admin",
+          "type_info": "Bool"
         }
       ],
       "parameters": {
@@ -279,6 +289,8 @@
         ]
       },
       "nullable": [
+        false,
+        false,
         false,
         false,
         false,
@@ -315,6 +327,16 @@
           "ordinal": 4,
           "name": "bio",
           "type_info": "Text"
+        },
+        {
+          "ordinal": 5,
+          "name": "verified",
+          "type_info": "Bool"
+        },
+        {
+          "ordinal": 6,
+          "name": "admin",
+          "type_info": "Bool"
         }
       ],
       "parameters": {
@@ -324,6 +346,8 @@
         ]
       },
       "nullable": [
+        false,
+        false,
         false,
         false,
         false,
