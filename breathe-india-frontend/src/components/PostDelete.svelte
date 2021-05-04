@@ -25,7 +25,7 @@
 </script>
 
 <div
-  class="flex flex-col bg-gray-100 p-4 gap-2 min-h-screen justify-start"
+  class="flex flex-col bg-gray-100 p-4 gap-2 flex-1 justify-start"
   bind:this={root}
 >
   <h1 class="text-2xl font-bold text-gray-500">Are you sure to delete?</h1>

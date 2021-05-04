@@ -15,7 +15,7 @@
   let post = fwdError(dispatch, api.getPostSingle({ id: post_id }));
 </script>
 
-<div class="flex flex-col bg-gray-100 p-4 gap-2 min-h-screen justify-start">
+<div class="flex flex-col bg-gray-100 p-4 gap-2 flex-1 justify-start">
   {#await post}
     Loading
   {:then res}
@@ -117,12 +117,7 @@
       />
     </label>
     <h1 class="text-2xl font-bold text-gray-500">more info ..</h1>
-    <textarea
-      readonly
-      class="input"
-      placeholder="N/A"
-      value={res.post.message}
-    />
+    <div class="input" style="min-height: 6em;">{res.post.message}</div>
     <label class="field">
       <span>Posted</span>
       <input

@@ -78,7 +78,7 @@
 <form
   on:submit|preventDefault={save}
   bind:this={form}
-  class="flex flex-col bg-gray-100 p-4 gap-2 min-h-screen justify-start"
+  class="flex flex-col bg-gray-100 p-4 gap-2 flex-1 justify-start"
 >
   <h1 class="text-2xl font-bold text-gray-500">
     {#if typ == "Needs"}
@@ -160,6 +160,7 @@
     class="input"
     placeholder="How to contact you, anything else to note, etc"
     bind:value={message}
+    rows="6"
   />
   <button class="button" disabled={saving}>
     {#if post_id == null}

@@ -17,8 +17,14 @@
   @apply px-2 p-1 flex-1 w-full;
 }
 
-textarea.input {
+textarea.input, div.input {
+  @apply rounded;
+  @apply bg-gray-50 text-gray-700;
   @apply px-2 p-1;
+}
+
+div.input {
+  @apply border border-gray-300;
 }
 
 .field > input[readonly], textarea[readonly] {
