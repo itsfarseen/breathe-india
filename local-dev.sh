@@ -12,12 +12,21 @@ fi;
 
 backend() {
     cd ./breathe-india-backend
-    cargo run
+    while [ $? -eq 0 ]; do
+        cargo run;
+        echo "Respawning.. Press Ctrl-C to abort.";
+        sleep 1s;
+    done;
+
 }
 
 frontend() {
     cd ./breathe-india-frontend
-    yarn dev
+    while [ $? -eq 0 ]; do
+        yarn dev;
+        echo "Respawning.. Press Ctrl-C to abort.";
+        sleep 1s;
+    done;
 }
 
 if [ "$1" = "backend" ]; then
