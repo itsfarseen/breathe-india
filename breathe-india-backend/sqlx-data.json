@@ -472,44 +472,6 @@
       ]
     }
   },
-  "b4d7cbb87dabc2575e6e013688be5fb788df797f313138fd1e2aa53ae3b3fd10": {
-    "query": "\n                SELECT id, name, profile_pic_url, bio\n                FROM users \n                WHERE id = $1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "name",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "profile_pic_url",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "bio",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "c1448a7fc7098a0498f546946455939cf255aee31c1f10d9f5700597137eda7a": {
     "query": "\n        SELECT posts.id,\n               userid,\n               post_type as \"post_type: _\",\n               state,\n               district,\n               city,\n               spot,\n               created_at,\n               updated_at,\n               item,\n               quantity,\n               message\n        FROM posts \n        WHERE id = $1",
     "describe": {
@@ -625,6 +587,50 @@
         ]
       },
       "nullable": [
+        false
+      ]
+    }
+  },
+  "e47580d94c9d07e9d1b206822fdb9ba776bf218afc6b78aa18a8597971ed47db": {
+    "query": "\n            SELECT id, name, profile_pic_url, bio, verified\n            FROM users \n            WHERE id = $1 AND verified = TRUE",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "profile_pic_url",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "bio",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "verified",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
         false
       ]
     }

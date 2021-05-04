@@ -33,6 +33,9 @@ const profileSchema = {
     email: { type: "string" },
     profile_pic_url: { type: "string" },
     bio: { type: "string" },
+    verified: { type: "boolean" },
+    admin: { type: "boolean" },
+
   },
 };
 const parseProfileResponse = ajv.compileParser(profileSchema);
@@ -78,6 +81,7 @@ const publicProfileSchema = {
     name: { type: "string" },
     profile_pic_url: { type: "string" },
     bio: { type: "string" },
+    verified: { type: "boolean" },
   }
 };
 

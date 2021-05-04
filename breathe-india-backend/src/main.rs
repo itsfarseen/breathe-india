@@ -322,6 +322,7 @@ pub struct ProfilePublic {
     name: String,
     profile_pic_url: String,
     bio: String,
+    verified: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -437,20 +438,17 @@ async fn post_single(
     let post = fail!(res);
 
     if let Some(post) = post {
-        let mut user = None;
-        if let PostType::Supplies = post.post_type {
-            let res = sqlx::query_as!(
-                ProfilePublic,
-                r#"
-                SELECT id, name, profile_pic_url, bio
-                FROM users 
-                WHERE id = $1"#,
-                post.userid
-            )
-            .fetch_one(&*db)
-            .await;
-            user = Some(fail!(res));
-        }
+        let res = sqlx::query_as!(
+            ProfilePublic,
+            r#"
+            SELECT id, name, profile_pic_url, bio, verified
+            FROM users 
+            WHERE id = $1 AND verified = TRUE"#,
+            post.userid
+        )
+        .fetch_optional(&*db)
+        .await;
+        let user = fail!(res);
         MyRes::Ok(PostSingle { post, user })
     } else {
         MyRes::Err(())
