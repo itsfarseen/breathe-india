@@ -54,6 +54,7 @@ impl JwkKeys {
 
 const FALLBACK_TIMEOUT: Duration = Duration::from_secs(60);
 
+#[derive(Debug, PartialEq)]
 enum MaxAgeParseError {
     NoMaxAgeSpecified,
     NoCacheControlHeader,
@@ -99,5 +100,37 @@ fn parse_cache_control_header(header_value: &HeaderValue) -> Result<Duration, Ma
     match header_value.to_str() {
         Ok(string_value) => parse_max_age_value(string_value),
         Err(_) => Err(MaxAgeParseError::NoCacheControlHeader),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_parse_max_age_value() -> Result<(), MaxAgeParseError> {
+        let res_exp = &[
+            ("max-age=120", 120),
+            (" max-age = 130 ", 130),
+            ("key1=val,max-age=140,key2=val", 140),
+            ("key1=val, max-age=150 , key2=val", 150),
+        ];
+        for (res, expected) in res_exp {
+            assert_eq!(parse_max_age_value(res)?, Duration::from_secs(*expected));
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_max_age_value_fail() {
+        let res_exp = &[
+            ("max-age", MaxAgeParseError::MaxAgeValueEmpty),
+            ("max-age=1r", MaxAgeParseError::NonNumericMaxAge),
+            ("max-age=", MaxAgeParseError::NonNumericMaxAge),
+            ("key=val", MaxAgeParseError::NoMaxAgeSpecified)
+        ];
+        for (res, expected) in res_exp {
+            assert_eq!(parse_max_age_value(res).unwrap_err(), *expected);
+        }
     }
 }
