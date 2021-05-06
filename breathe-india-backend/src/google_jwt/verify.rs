@@ -40,9 +40,9 @@ impl JwtVerifier {
         keys: &HashMap<String, JwkKey>,
     ) -> Result<TokenData<Claims>, VerificationError> {
         let token_kid = decode_header(token)
-            .map(|header| header.kid)
             .map_err(|_| VerificationError::InvalidToken("Failed to decode header".to_owned()))?
-            .ok_or_else(|| VerificationError::InvalidToken("header.kid not present".to_owned()))?;
+            .kid
+            .ok_or(VerificationError::InvalidToken("header.kid not present".to_owned()))?;
 
         let key = keys.get(&token_kid).ok_or(VerificationError::KeyNotFound)?;
 

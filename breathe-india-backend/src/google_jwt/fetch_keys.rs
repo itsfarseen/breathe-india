@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 use reqwest::header::HeaderValue;
 use reqwest::Response;
-use std::collections::HashMap;
 use std::time::{Duration, Instant};
+use std::{collections::HashMap, num::ParseIntError};
 
 #[derive(Debug, Deserialize)]
 struct KeyResponse {
@@ -62,6 +62,12 @@ enum MaxAgeParseError {
     NonNumericMaxAge,
 }
 
+impl From<ParseIntError> for MaxAgeParseError {
+    fn from(_: ParseIntError) -> Self {
+        Self::NonNumericMaxAge
+    }
+}
+
 // Determines the max age of an HTTP response
 fn get_max_age(response: &Response) -> Result<Duration, MaxAgeParseError> {
     let headers = response.headers();
@@ -82,13 +88,7 @@ fn parse_max_age_value(cache_control_value: &str) -> Result<Duration, MaxAgePars
 
         if String::from("max-age").eq(&key.to_lowercase()) {
             match val {
-                Some(value) => {
-                    return Ok(Duration::from_secs(
-                        value
-                            .parse()
-                            .map_err(|_| MaxAgeParseError::NonNumericMaxAge)?,
-                    ))
-                }
+                Some(value) => return Ok(Duration::from_secs(value.parse()?)),
                 None => return Err(MaxAgeParseError::MaxAgeValueEmpty),
             }
         }
