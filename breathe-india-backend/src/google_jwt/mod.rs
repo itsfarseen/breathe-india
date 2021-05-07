@@ -4,6 +4,6 @@ mod config;
 mod fetch_keys;
 mod verify;
 
-pub use config::{get_configuration, JwkConfiguration};
+pub use config::JwkConfiguration;
 pub use fetch_keys::{JwkKey, JwkKeys};
 pub use verify::{Claims, JwtVerifier, VerificationError};
