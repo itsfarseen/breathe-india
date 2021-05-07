@@ -37,7 +37,7 @@ use myres::MyRes;
 
 struct GoogleJwkKeys(RwLock<Arc<JwkKeys>>);
 
-const GOOGLE_JWK_URL: &'static str = "https://www.googleapis.com/oauth2/v3/certs";
+const GOOGLE_JWK_URL: &str = "https://www.googleapis.com/oauth2/v3/certs";
 
 impl GoogleJwkKeys {
     pub async fn load_new() -> Result<Self> {

@@ -37,13 +37,9 @@ impl<'r, T: Serialize, E: Serialize + HasStatusCode> Responder<'r, 'static> for 
                 let mut e: &dyn Error = &e.as_ref();
 
                 error_chain.push(e.to_string());
-                loop {
-                    if let Some(e_src) = e.source() {
-                        e = e_src;
-                        error_chain.push(e.to_string());
-                    } else {
-                        break;
-                    }
+                while let Some(e_src) = e.source() {
+                    e = e_src;
+                    error_chain.push(e.to_string());
                 }
 
                 let error_chain = WrapSerde(error_chain);
