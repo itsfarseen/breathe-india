@@ -82,9 +82,9 @@
 >
   <h1 class="text-2xl font-bold text-gray-500">
     {#if typ == "Needs"}
-      I need ..
+      what is needed ..
     {:else if typ == "Supplies"}
-      I can supply ..
+      what is available ..
     {/if}
   </h1>
 

@@ -44,9 +44,9 @@
     </div>
     <h1 class="text-2xl font-bold text-gray-500">
       {#if res.post.post_type == "Needs"}
-        need ..
+        what is needed ..
       {:else if res.post.post_type == "Supplies"}
-        can supply ..
+        what is available ..
       {/if}
     </h1>
     <label class="field">
