@@ -144,7 +144,7 @@
       </h1>
     {:then}
       <div class="flex flex-col">
-        <h1 class="text-2xl font-bold text-gray-500 m-4">I need ..</h1>
+        <h1 class="text-2xl font-bold text-gray-500 m-4">needs ..</h1>
         {#await needs then posts}
           <div class="flex flex-col divide-y divide-gray-300">
             {#each posts as post}
@@ -156,7 +156,7 @@
             {/each}
           </div>
         {/await}
-        <h1 class="text-2xl font-bold text-gray-500 m-4">I can supply ..</h1>
+        <h1 class="text-2xl font-bold text-gray-500 m-4">supplies ..</h1>
         {#await supplies then posts}
           <div class="flex flex-col divide-y divide-gray-300">
             {#each posts as post}
