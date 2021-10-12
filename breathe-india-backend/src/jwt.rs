@@ -12,7 +12,7 @@ pub enum EncodeError {
     #[error("JWT_SECRET env var not found")]
     SecretKeyEnvNotFound,
     #[error("Error encoding using jsonwebtoken: {0}")]
-    JWTError(jsonwebtoken::errors::Error),
+    JwtError(jsonwebtoken::errors::Error),
 }
 
 #[derive(Error, Debug)]
@@ -22,7 +22,7 @@ pub enum DecodeError {
     #[error("Token expired")]
     TokenExpired,
     #[error("Error decoding using jsonwebtoken: {0}")]
-    JWTError(jsonwebtoken::errors::Error),
+    JwtError(jsonwebtoken::errors::Error),
 }
 
 impl Claims {
@@ -30,7 +30,7 @@ impl Claims {
         let secret = std::env::var("JWT_SECRET").map_err(|_| EncodeError::SecretKeyEnvNotFound)?;
         let encoding_key = EncodingKey::from_secret(secret.as_ref());
 
-        encode(&Header::default(), self, &encoding_key).map_err(EncodeError::JWTError)
+        encode(&Header::default(), self, &encoding_key).map_err(EncodeError::JwtError)
     }
 
     pub fn decode(token: &str) -> Result<Self, DecodeError> {
@@ -42,7 +42,7 @@ impl Claims {
                 if let jsonwebtoken::errors::ErrorKind::ExpiredSignature = e.kind() {
                     DecodeError::TokenExpired
                 } else {
-                    DecodeError::JWTError(e)
+                    DecodeError::JwtError(e)
                 }
             })
     }

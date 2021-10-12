@@ -39,13 +39,14 @@ impl JwkKeys {
             .await
             .context("Loading json body")?;
 
-        let mut keys_hm = HashMap::new();
-        for key in result.keys.into_iter() {
-            keys_hm.insert(key.kid.clone(), key);
-        }
+        let keys = result
+            .keys
+            .into_iter()
+            .map(|key| (key.kid.clone(), key))
+            .collect::<HashMap<_, _>>();
 
         Ok(JwkKeys {
-            keys: keys_hm,
+            keys,
             created: now,
             validity: max_age,
         })
@@ -78,19 +79,20 @@ fn parse_max_age_value(cache_control_value: &str) -> Result<Duration, MaxAgePars
     for token in tokens {
         let key_value: Vec<&str> = token.split("=").map(|s| s.trim()).collect();
         let key = key_value.first().unwrap();
-        let val = key_value.get(1);
 
-        if String::from("max-age").eq(&key.to_lowercase()) {
-            match val {
-                Some(value) => {
-                    return Ok(Duration::from_secs(
-                        value
-                            .parse()
-                            .map_err(|_| MaxAgeParseError::NonNumericMaxAge)?,
-                    ))
-                }
-                None => return Err(MaxAgeParseError::MaxAgeValueEmpty),
+        if key.to_lowercase() != "max-age" {
+            continue;
+        }
+
+        let val = key_value.get(1);
+        match val {
+            Some(value) => {
+                let age = value
+                    .parse()
+                    .map_err(|_| MaxAgeParseError::NonNumericMaxAge)?;
+                return Ok(Duration::from_secs(age));
             }
+            None => return Err(MaxAgeParseError::MaxAgeValueEmpty),
         }
     }
     return Err(MaxAgeParseError::NoMaxAgeSpecified);
@@ -127,7 +129,7 @@ mod test {
             ("max-age", MaxAgeParseError::MaxAgeValueEmpty),
             ("max-age=1r", MaxAgeParseError::NonNumericMaxAge),
             ("max-age=", MaxAgeParseError::NonNumericMaxAge),
-            ("key=val", MaxAgeParseError::NoMaxAgeSpecified)
+            ("key=val", MaxAgeParseError::NoMaxAgeSpecified),
         ];
         for (res, expected) in res_exp {
             assert_eq!(parse_max_age_value(res).unwrap_err(), *expected);
