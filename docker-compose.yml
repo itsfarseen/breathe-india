@@ -2,14 +2,18 @@ version: "3.3"
 services:
   nginx:
     image: nginx:1.20.0-alpine
-    ports:
-      - "8001:80"
     volumes:
       - frontend_dist:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - frontend
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.breatheindia.rule=Host(`breathe-india.com`)"
+    networks:
+      - web
+      - internal
   frontend:
     build: ./breathe-india-frontend
     image: localhost:5000/breathe-india/frontend:latest
@@ -17,6 +21,8 @@ services:
       - frontend_dist:/app/nginx_volume
     depends_on:
       - backend
+    networks:
+      - internal
   backend:
     build: ./breathe-india-backend
     image: localhost:5000/breathe-india/backend:latest
@@ -24,11 +30,21 @@ services:
       - ./backend.env
     depends_on:
       - postgres
+    networks:
+      - internal
   postgres:
     image: postgres:13.2-alpine
     env_file:
       - ./postgres.env
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
 volumes:
   frontend_dist: {}
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
