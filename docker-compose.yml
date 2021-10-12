@@ -14,6 +14,7 @@ services:
     networks:
       - web
       - internal
+    restart: always
   frontend:
     build: ./breathe-india-frontend
     image: localhost:5000/breathe-india/frontend:latest
@@ -23,6 +24,8 @@ services:
       - backend
     networks:
       - internal
+    # don't restart cuz this one simply copies its files
+    # to nginx and exits
   backend:
     build: ./breathe-india-backend
     image: localhost:5000/breathe-india/backend:latest
@@ -32,6 +35,7 @@ services:
       - postgres
     networks:
       - internal
+    restart: always
   postgres:
     image: postgres:13.2-alpine
     env_file:
@@ -40,6 +44,7 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     networks:
       - internal
+    restart: always
 volumes:
   frontend_dist: {}
 
