@@ -1,7 +1,7 @@
 #!/bin/bash
 # Configuration, change as needed
 SSH_USER=farzeen
-SSH_HOST=bisket-town
+SSH_HOST=bisket-magenta
 
 docker-compose build
 
